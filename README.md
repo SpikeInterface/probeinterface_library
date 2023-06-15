@@ -1,15 +1,15 @@
-# probeinterface_library
+# ProbeInterface Library
 
-Library of probe in the probeinterface format.
+Library of probes in the **probeinterface** format.
 
 
 See:
 
-  * https://github.com/SpikeInterface/probeinterface
-  * https://probeinterface.readthedocs.io/
+  * GitHub repo: https://github.com/SpikeInterface/probeinterface
+  * Documentation: https://probeinterface.readthedocs.io/
 
 
-The format of probe are JSON based. See documentation for specifications.
+The format of probes is JSON-based. See [documentation](https://probeinterface.readthedocs.io/en/main/format_spec.html) for full specifications.
 
 
   
