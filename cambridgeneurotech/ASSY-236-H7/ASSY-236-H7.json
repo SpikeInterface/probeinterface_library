@@ -1,14 +1,13 @@
 {
     "specification": "probeinterface",
-    "version": "0.2.16",
+    "version": "0.2.18",
     "probes": [
         {
             "ndim": 2,
             "si_units": "um",
             "annotations": {
                 "name": "ASSY-236-H7",
-                "manufacturer": "cambridgeneurotech",
-                "first_index": 1
+                "manufacturer": "cambridgeneurotech"
             },
             "contact_annotations": {},
             "contact_positions": [
@@ -1237,11 +1236,11 @@
             ],
             "probe_planar_contour": [
                 [
-                    -45.0,
+                    -40.0,
                     865.0
                 ],
                 [
-                    -45.0,
+                    -40.0,
                     825.0
                 ],
                 [
@@ -1253,15 +1252,15 @@
                     -65.0
                 ],
                 [
-                    5.0,
+                    7.0,
                     0.0
                 ],
                 [
-                    20.0,
+                    25.0,
                     825.0
                 ],
                 [
-                    205.0,
+                    210.0,
                     825.0
                 ],
                 [
@@ -1273,15 +1272,15 @@
                     -65.0
                 ],
                 [
-                    255.0,
+                    257.0,
                     0.0
                 ],
                 [
-                    270.0,
+                    275.0,
                     825.0
                 ],
                 [
-                    270.0,
+                    275.0,
                     865.0
                 ]
             ],

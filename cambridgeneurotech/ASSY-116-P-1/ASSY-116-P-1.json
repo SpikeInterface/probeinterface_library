@@ -1,14 +1,13 @@
 {
     "specification": "probeinterface",
-    "version": "0.2.16",
+    "version": "0.2.18",
     "probes": [
         {
             "ndim": 2,
             "si_units": "um",
             "annotations": {
                 "name": "ASSY-116-P-1",
-                "manufacturer": "cambridgeneurotech",
-                "first_index": 1
+                "manufacturer": "cambridgeneurotech"
             },
             "contact_annotations": {},
             "contact_positions": [
@@ -638,11 +637,11 @@
                 ],
                 [
                     -10.0,
-                    -25.0
+                    -20.0
                 ],
                 [
                     35.0,
-                    -100.0
+                    -70.0
                 ],
                 [
                     66.5,
@@ -650,7 +649,7 @@
                 ],
                 [
                     66.5,
-                    230.0
+                    225.0
                 ],
                 [
                     240.0,
@@ -658,11 +657,11 @@
                 ],
                 [
                     240.0,
-                    -25.0
+                    -20.0
                 ],
                 [
                     285.0,
-                    -100.0
+                    -70.0
                 ],
                 [
                     316.5,
@@ -670,11 +669,11 @@
                 ],
                 [
                     316.5,
-                    230.0
+                    225.0
                 ],
                 [
                     316.5,
-                    270.0
+                    265.0
                 ]
             ],
             "contact_ids": [

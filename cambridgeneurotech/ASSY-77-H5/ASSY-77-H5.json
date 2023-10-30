@@ -1,14 +1,13 @@
 {
     "specification": "probeinterface",
-    "version": "0.2.16",
+    "version": "0.2.18",
     "probes": [
         {
             "ndim": 2,
             "si_units": "um",
             "annotations": {
                 "name": "ASSY-77-H5",
-                "manufacturer": "cambridgeneurotech",
-                "first_index": 1
+                "manufacturer": "cambridgeneurotech"
             },
             "contact_annotations": {},
             "contact_positions": [
@@ -1245,15 +1244,15 @@
                     -10.0
                 ],
                 [
-                    11.0,
-                    -28.0
+                    12.0,
+                    -30.0
                 ],
                 [
-                    20.0,
-                    -10.0
+                    30.0,
+                    10.0
                 ],
                 [
-                    72.5,
+                    70.0,
                     900.0
                 ]
             ],

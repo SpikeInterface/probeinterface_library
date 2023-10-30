@@ -1,14 +1,13 @@
 {
     "specification": "probeinterface",
-    "version": "0.2.16",
+    "version": "0.2.18",
     "probes": [
         {
             "ndim": 2,
             "si_units": "um",
             "annotations": {
                 "name": "ASSY-37-E-2",
-                "manufacturer": "cambridgeneurotech",
-                "first_index": 1
+                "manufacturer": "cambridgeneurotech"
             },
             "contact_annotations": {},
             "contact_positions": [
@@ -646,11 +645,11 @@
                 ],
                 [
                     0.0,
-                    -20.0
+                    -22.0
                 ],
                 [
-                    13.0,
-                    35.0
+                    14.0,
+                    34.0
                 ],
                 [
                     33.0,
@@ -674,11 +673,11 @@
                 ],
                 [
                     250.0,
-                    -20.0
+                    -22.0
                 ],
                 [
-                    263.0,
-                    35.0
+                    264.0,
+                    34.0
                 ],
                 [
                     283.0,

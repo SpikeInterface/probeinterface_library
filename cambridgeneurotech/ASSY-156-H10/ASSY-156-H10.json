@@ -1,14 +1,13 @@
 {
     "specification": "probeinterface",
-    "version": "0.2.17",
+    "version": "0.2.18",
     "probes": [
         {
             "ndim": 2,
             "si_units": "um",
             "annotations": {
                 "name": "ASSY-156-H10",
-                "manufacturer": "cambridgeneurotech",
-                "first_index": 1
+                "manufacturer": "cambridgeneurotech"
             },
             "contact_annotations": {},
             "contact_positions": [
@@ -1237,52 +1236,52 @@
             ],
             "probe_planar_contour": [
                 [
-                    27.0,
-                    -361.0
+                    -10.0,
+                    440.0
                 ],
                 [
-                    27.0,
-                    -401.0
+                    -10.0,
+                    400.0
                 ],
                 [
-                    -27.0,
-                    -51.0
+                    -10.0,
+                    0.0
                 ],
                 [
-                    0.0,
-                    12.0
+                    22.0,
+                    -50.0
                 ],
                 [
-                    27.0,
-                    -51.0
+                    32.0,
+                    0.0
                 ],
                 [
-                    27.0,
-                    -401.0
+                    32.0,
+                    400.0
                 ],
                 [
-                    177.0,
-                    -401.0
+                    140.0,
+                    400.0
                 ],
                 [
-                    123.0,
-                    -51.0
+                    140.0,
+                    0.0
                 ],
                 [
-                    150.0,
-                    12.0
+                    172.0,
+                    -50.0
                 ],
                 [
-                    177.0,
-                    -51.0
+                    182.0,
+                    0.0
                 ],
                 [
-                    177.0,
-                    -401.0
+                    182.0,
+                    400.0
                 ],
                 [
-                    177.0,
-                    -361.0
+                    182.0,
+                    440.0
                 ]
             ],
             "contact_ids": [
