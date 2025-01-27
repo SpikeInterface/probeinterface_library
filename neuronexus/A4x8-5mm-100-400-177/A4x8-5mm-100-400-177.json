@@ -6,7 +6,7 @@
             "ndim": 2,
             "si_units": "um",
             "annotations": {
-                "name": "A4x8-5mm-100-400-177",
+                "model_name": "A4x8-5mm-100-400-177",
                 "manufacturer": "neuronexus",
                 "first_index": 1
             },
