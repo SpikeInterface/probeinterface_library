@@ -1,12 +1,12 @@
 {
     "specification": "probeinterface",
-    "version": "0.2.18",
+    "version": "0.2.24",
     "probes": [
         {
             "ndim": 2,
             "si_units": "um",
             "annotations": {
-                "name": "ASSY-236-H10",
+                "model_name": "ASSY-236-H10",
                 "manufacturer": "cambridgeneurotech"
             },
             "contact_annotations": {},

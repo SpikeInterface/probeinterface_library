@@ -6,7 +6,7 @@
             "ndim": 2,
             "si_units": "um",
             "annotations": {
-                "name": "ASSY-1-P-1",
+                "model_name": "ASSY-1-P-1",
                 "manufacturer": "cambridgeneurotech"
             },
             "contact_annotations": {},
