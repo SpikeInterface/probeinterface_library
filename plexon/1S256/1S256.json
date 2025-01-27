@@ -6,7 +6,7 @@
             "ndim": 2,
             "si_units": "um",
             "annotations": {
-                "name": "1S256",
+                "model_name": "1S256",
                 "manufacturer": "Plexon-SiNAPS",
                 "first_index": 0
             },

@@ -7,7 +7,7 @@
             "si_units": "um",
             "annotations": {
                 "manufacturer": "neuronexus",
-                "name": "A4x8-5mm-200-400-703",
+                "model_name": "A4x8-5mm-200-400-703",
                 "first_index": 1
             },
             "contact_annotations": {},
