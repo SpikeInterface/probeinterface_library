@@ -5,7 +5,7 @@ import jsonschema
 import pytest
 import requests
 
-schema_url = "https://raw.githubusercontent.com/SpikeInterface/probeinterface/main/resources/probe.json.schema"
+schema_url = "https://raw.githubusercontent.com/SpikeInterface/probeinterface/main/src/probeinterface/schema/probe.json.schema"
 
 response = requests.get(schema_url)
 response.raise_for_status()
