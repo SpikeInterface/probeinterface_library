@@ -6,12 +6,13 @@
             "ndim": 2,
             "si_units": "um",
             "annotations": {
-                "model_name": "Neuropixels Ultra (1 bank)",
-                "manufacturer": "IMEC",
+                "name": "Npix 1.0 UHD1 passive",
+                "model_name": "NP1100",
+                "manufacturer": "imec",
                 "shank_tips": [
                     [
-                        21,
-                        -186
+                        21.0,
+                        -217.5
                     ]
                 ]
             },
@@ -5784,1178 +5785,1178 @@
             ],
             "contact_shape_params": [
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 },
                 {
-                    "width": 5
+                    "width": 5.0
                 }
             ],
             "probe_planar_contour": [
                 [
-                    -14,
-                    9989
+                    -14.0,
+                    9989.0
                 ],
                 [
-                    -14,
-                    -11
+                    -14.0,
+                    -11.0
                 ],
                 [
-                    21,
-                    -186
+                    21.0,
+                    -217.5
                 ],
                 [
-                    56,
-                    -11
+                    56.0,
+                    -11.0
                 ],
                 [
-                    56,
-                    9989
+                    56.0,
+                    9989.0
                 ]
             ],
             "device_channel_indices": [
