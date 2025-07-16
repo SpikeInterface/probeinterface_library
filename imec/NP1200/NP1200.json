@@ -1,14 +1,14 @@
 {
     "specification": "probeinterface",
-    "version": "0.2.24",
+    "version": "0.2.28",
     "probes": [
         {
             "ndim": 2,
             "si_units": "um",
             "annotations": {
-                "name": "NHP passive probe 25mm, used with 128 ch headstage",
                 "model_name": "NP1200",
                 "manufacturer": "imec",
+                "description": "NHP passive probe 25mm, used with 128 ch headstage",
                 "shank_tips": [
                     [
                         26.0,

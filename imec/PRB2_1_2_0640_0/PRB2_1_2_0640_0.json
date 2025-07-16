@@ -1,14 +1,14 @@
 {
     "specification": "probeinterface",
-    "version": "0.2.24",
+    "version": "0.2.28",
     "probes": [
         {
             "ndim": 2,
             "si_units": "um",
             "annotations": {
-                "name": "Neuropixels 2.0 phase 1 single shank",
                 "model_name": "PRB2_1_2_0640_0",
                 "manufacturer": "imec",
+                "description": "Neuropixels 2.0 phase 1 single shank",
                 "shank_tips": [
                     [
                         8.0,

@@ -1,14 +1,14 @@
 {
     "specification": "probeinterface",
-    "version": "0.2.24",
+    "version": "0.2.28",
     "probes": [
         {
             "ndim": 2,
             "si_units": "um",
             "annotations": {
-                "name": "Neuropixels NXT phase1B single shank metal cap",
                 "model_name": "NP3011",
                 "manufacturer": "imec",
+                "description": "Neuropixels NXT phase1B single shank metal cap",
                 "shank_tips": [
                     [
                         8.0,

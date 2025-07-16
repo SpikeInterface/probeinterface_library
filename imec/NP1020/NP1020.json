@@ -1,14 +1,14 @@
 {
     "specification": "probeinterface",
-    "version": "0.2.24",
+    "version": "0.2.28",
     "probes": [
         {
             "ndim": 2,
             "si_units": "um",
             "annotations": {
-                "name": "Npix 1.0 NHP MEDIUM SOI35",
                 "model_name": "NP1020",
                 "manufacturer": "imec",
+                "description": "Npix 1.0 NHP MEDIUM SOI35",
                 "shank_tips": [
                     [
                         51.5,

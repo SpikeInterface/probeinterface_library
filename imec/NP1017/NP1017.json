@@ -1,14 +1,14 @@
 {
     "specification": "probeinterface",
-    "version": "0.2.24",
+    "version": "0.2.28",
     "probes": [
         {
             "ndim": 2,
             "si_units": "um",
             "annotations": {
-                "name": "Neuropixels 1.0 NHP short linear probe with cap, cabling, sharpened, sterile packaging sterilized",
                 "model_name": "NP1017",
                 "manufacturer": "imec",
+                "description": "Neuropixels 1.0 NHP short linear probe with cap, cabling, sharpened, sterile packaging sterilized",
                 "shank_tips": [
                     [
                         8.0,

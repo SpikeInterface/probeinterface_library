@@ -1,14 +1,14 @@
 {
     "specification": "probeinterface",
-    "version": "0.2.24",
+    "version": "0.2.28",
     "probes": [
         {
             "ndim": 2,
             "si_units": "um",
             "annotations": {
-                "name": "Neuropixels 2.0 single shank NHP short linear probe with cap",
                 "model_name": "NP2005",
                 "manufacturer": "imec",
+                "description": "Neuropixels 2.0 single shank NHP short linear probe with cap",
                 "shank_tips": [
                     [
                         8.0,

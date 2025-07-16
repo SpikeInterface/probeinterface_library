@@ -1,14 +1,14 @@
 {
     "specification": "probeinterface",
-    "version": "0.2.24",
+    "version": "0.2.28",
     "probes": [
         {
             "ndim": 2,
             "si_units": "um",
             "annotations": {
-                "name": "Optopix phase1",
                 "model_name": "NP1300",
                 "manufacturer": "imec",
+                "description": "Optopix phase1",
                 "shank_tips": [
                     [
                         24.0,

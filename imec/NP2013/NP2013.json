@@ -1,14 +1,14 @@
 {
     "specification": "probeinterface",
-    "version": "0.2.24",
+    "version": "0.2.28",
     "probes": [
         {
             "ndim": 2,
             "si_units": "um",
             "annotations": {
-                "name": "Neuropixels 2.0 multishank probe",
                 "model_name": "NP2013",
                 "manufacturer": "imec",
+                "description": "Neuropixels 2.0 multishank probe",
                 "shank_tips": [
                     [
                         8.0,
