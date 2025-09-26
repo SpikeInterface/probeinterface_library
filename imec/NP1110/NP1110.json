@@ -6,8 +6,9 @@
             "ndim": 2,
             "si_units": "um",
             "annotations": {
-                "model_name": "Neuropixels Ultra (16 banks)",
-                "manufacturer": "IMEC",
+                "model_name": "NP1110",
+                "description": "Neuropixels Ultra (16 banks)",
+                "manufacturer": "imec",
                 "shank_tips": [
                     [
                         21,
