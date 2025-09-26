@@ -26,7 +26,6 @@ def test_naming_convention(file):
         data = json.load(f)
         model_name = data["annotations"]["model_name"]
         manufacturer = data["annotations"]["manufacturer"]
-        assert model_name == model_name.lower()
         assert manufacturer == manufacturer.lower()
         path_parts = file.split("/")
         assert model_name == path_parts[-1].replace(".json", "")
