@@ -18,3 +18,17 @@ def test_valid_probe_dict(file):
     with open(file) as f:
         data = json.load(f)
         jsonschema.validate(data, response.json())
+
+@pytest.mark.parametrize("file", files)
+def test_naming_convention(file):
+    """Check that model_name and manufacturer are lowercase. and they correspond to the path."""
+    with open(file) as f:
+        data = json.load(f)
+        probe_annotations = data["probes"][0]["annotations"]
+        model_name = probe_annotations["model_name"]
+        manufacturer = probe_annotations["manufacturer"]
+        assert manufacturer == manufacturer.lower()
+        path_parts = file.split("/")
+        assert model_name == path_parts[-1].replace(".json", "")
+        assert model_name == path_parts[-2]
+        assert manufacturer == path_parts[-3]

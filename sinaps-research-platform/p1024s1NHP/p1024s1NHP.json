@@ -6,8 +6,8 @@
             "ndim": 2,
             "si_units": "um",
             "annotations": {
-                "model_name": "SiNAPS-p1024s1NHP",
-                "manufacturer": "SiNAPS-ResearchPlatform",
+                "model_name": "p1024s1NHP",
+                "manufacturer": "sinaps-research-platform",
                 "first_index": 0
             },
             "contact_annotations": {},

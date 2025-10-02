@@ -7,7 +7,7 @@
             "si_units": "um",
             "annotations": {
                 "model_name": "1S512-N",
-                "manufacturer": "Plexon-SiNAPS",
+                "manufacturer": "plexon",
                 "first_index": 0
             },
             "contact_annotations": {},
