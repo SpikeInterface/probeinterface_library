@@ -51,6 +51,7 @@ jobs:
           python check_for_new_NP_probes.py
           rm -r neuropixels_library_generated/
           cd ..
+          rm -r ./probeinterface
 
       - name: Commit changes if any
         id: commit
