@@ -67,6 +67,8 @@ jobs:
         run: |
           # --- USER ACTION REQUIRED ---
           # Replace this path with the correct path to your local script
+          ls
+          cd scripts/
           python check_for_new_NP_probes.py
           rm -r neuropixels_library_generated/
           cd ..
