@@ -2,7 +2,7 @@ from pathlib import Path
 import shutil
 
 old_dir = Path('../imec')
-new_dir = Path('../probeinterface/resources/neuropixels_library_generated')
+new_dir = Path('./neuropixels_library_generated')
 
 existing_probes = list(probe_path.name for probe_path in old_dir.iterdir())
 
