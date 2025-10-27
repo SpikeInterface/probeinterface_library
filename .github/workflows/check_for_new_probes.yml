@@ -37,7 +37,7 @@ jobs:
       # --- (Optional) ---
       # If your local script needs libraries, uncomment this step
       - name: Install local dependencies
-        run: pip install probeinterface
+        run: pip install probeinterface matplotlib
 
       # Step 3: Clone the *other* repository into a subfolder named './other-repo'
       - name: Clone external repository
