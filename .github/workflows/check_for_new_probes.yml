@@ -1,9 +1,8 @@
-name: Clone, Run Scripts, and Create PR
-
+name: Check for new NP probes
 
 on:
   schedule:
-    - cron: '1 0 * * 1' # Every Monday at 00:00 UTC
+    - cron: '0 1 * * 1' # Every Monday at 01:00 UTC
   workflow_dispatch:
 
 # Grant permissions for the job to write to contents (push) and create PRs.
@@ -15,31 +14,18 @@ jobs:
   build-and-pr:
     runs-on: ubuntu-latest
     steps:
-      # Step 1: Check out the code in your current (local) repository
-      # We use a Personal Access Token (PAT) so the action has permission
-      # to push a new branch and open a pull request.
+
       - name: Check out local repository
         uses: actions/checkout@v4
-        # with:
-        #   # --- USER ACTION REQUIRED ---
-        #   # You MUST create a repository secret named GH_PAT.
-        #   # Go to Settings > Secrets and Variables > Actions > New repository secret
-        #   # The token needs the 'repo' (or 'public_repo') and 'workflow' scopes.
-        #   token: ${{ secrets.GH_PAT }}
 
-      # Step 2: Set up a Python environment
+      # Set up a Python environment
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.10' # Or your preferred version
+          python-version: '3.10' 
           cache: 'pip' # Caches dependencies to speed up future runs
 
-      # --- (Optional) ---
-      # If your local script needs libraries, uncomment this step
-      - name: Install local dependencies
-        run: pip install probeinterface matplotlib
-
-      # Step 3: Clone the *other* repository into a subfolder named './other-repo'
+      #  Clone dev version of probeinterface
       - name: Clone external repository
         run: |
           # --- USER ACTION REQUIRED ---
@@ -47,22 +33,15 @@ jobs:
           # If it's a private repo, your GH_PAT must have access.
           git clone https://github.com/spikeinterface/probeinterface ./probeinterface
 
-      # --- (Optional) ---
-      # If the external script needs libraries, uncomment this step
-      # - name: Install external repo dependencies
-      #   run: pip install -r ./other-repo/requirements.txt
+      - name: Install probeinterface and matplotlib
+        run: pip install ./probeinterface matplotlib
 
-      # Step 4: Run the Python script from the *external* repository
-      - name: Run external script
+      - name: Generate full NP library
         run: |
-          # --- USER ACTION REQUIRED ---
-          # Replace this path with the correct path to the script
-          # in the repository you just cloned.
           cd scripts/
           python ../probeinterface/resources/generate_neuropixels_library.py
 
-      # Step 5: Run the Python script from your *local* repository
-      # This is the script that should modify the files you want to PR.
+      # Check for any new probes
       - name: Run local script
         run: |
           # --- USER ACTION REQUIRED ---
@@ -86,11 +65,11 @@ jobs:
             echo "No changes to commit"
             echo "changes=false" >> $GITHUB_OUTPUT
           else
-            git commit -m "Update neuropixels_probe_features from ProbeTable"
+            git commit -m "Update imec library with new probes"
             echo "changes=true" >> $GITHUB_OUTPUT
           fi
 
-      - name: Update imec library with new probes
+      - name: Create pull request to add probes
         if: steps.commit.outputs.changes == 'true'
         uses: peter-evans/create-pull-request@v7
         with:
