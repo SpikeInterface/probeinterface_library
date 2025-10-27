@@ -59,7 +59,7 @@ jobs:
           # Replace this path with the correct path to the script
           # in the repository you just cloned.
           cd scripts/
-          python ../../probeinterface/resources/generate_neuropixels_library.py
+          python ../probeinterface/resources/generate_neuropixels_library.py
 
       # Step 5: Run the Python script from your *local* repository
       # This is the script that should modify the files you want to PR.
