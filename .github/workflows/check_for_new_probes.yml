@@ -58,7 +58,7 @@ jobs:
           # --- USER ACTION REQUIRED ---
           # Replace this path with the correct path to the script
           # in the repository you just cloned.
-          cd tools/
+          cd scripts/
           python ../../probeinterface/resources/generate_neuropixels_library.py
 
       # Step 5: Run the Python script from your *local* repository
