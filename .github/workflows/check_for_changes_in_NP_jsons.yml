@@ -1,8 +1,8 @@
-name: Check for new NP probes
+name: Check for changes in NP json files
 
 on:
   schedule:
-    - cron: '0 1 * * 1' # Every Monday at 01:00 UTC
+    - cron: '0 0 * * 2' # Every Tuesday at 00:00 UTC
   workflow_dispatch:
 
 # Grant permissions for the job to write to contents (push) and create PRs.
@@ -43,10 +43,8 @@ jobs:
       # Check for any new probes
       - name: Run local script
         run: |
-          cd scripts/
-          python check_for_new_NP_probes.py
-          rm -r neuropixels_library_generated/
-          cd ..
+          rsync -av --include='*/' --include='*.json' --exclude='*' scripts/neuropixels_library_generated/ imec/
+          rm -r scripts/neuropixels_library_generated/
           rm -r ./probeinterface
 
       - name: Commit changes if any
@@ -62,7 +60,7 @@ jobs:
             echo "No changes to commit"
             echo "changes=false" >> $GITHUB_OUTPUT
           else
-            git commit -m "Update imec library with new probes"
+            git commit -m "Update json files for NP probes"
             echo "changes=true" >> $GITHUB_OUTPUT
           fi
 
@@ -70,7 +68,7 @@ jobs:
         if: steps.commit.outputs.changes == 'true'
         uses: peter-evans/create-pull-request@v7
         with:
-          title: "Update library with new Neuropixels probes"
-          body: "This PR updates the probeinterace library with new Neuropixel probes, auto-generated file from the ProbeTable repository."
+          title: "Update Neuropixels json files"
+          body: "This PR updates the Neuropixel probes in probeinterace library, based on new data from the ProbeTable repository or because of a new ProbeInterface release."
           branch-suffix: short-commit-hash
           base: "main"
