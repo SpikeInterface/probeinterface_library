@@ -27,9 +27,6 @@ jobs:
       #  Clone dev version of probeinterface
       - name: Clone external repository
         run: |
-          # --- USER ACTION REQUIRED ---
-          # Replace this URL with the repository you want to clone.
-          # If it's a private repo, your GH_PAT must have access.
           git clone https://github.com/spikeinterface/probeinterface ./probeinterface
 
       - name: Install probeinterface and matplotlib
