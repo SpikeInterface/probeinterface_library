@@ -1,0 +1,79 @@
+name: Check for new NP probes
+
+on:
+  schedule:
+    - cron: '0 1 * * 1' # Every Monday at 01:00 UTC
+  workflow_dispatch:
+
+# Grant permissions for the job to write to contents (push) and create PRs.
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  build-and-pr:
+    runs-on: ubuntu-latest
+    steps:
+
+      - name: Check out local repository
+        uses: actions/checkout@v4
+
+      # Set up a Python environment
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10' 
+
+      #  Clone dev version of probeinterface
+      - name: Clone external repository
+        run: |
+          # --- USER ACTION REQUIRED ---
+          # Replace this URL with the repository you want to clone.
+          # If it's a private repo, your GH_PAT must have access.
+          git clone https://github.com/spikeinterface/probeinterface ./probeinterface
+
+      - name: Install probeinterface and matplotlib
+        run: pip install ./probeinterface matplotlib
+
+      - name: Generate full NP library
+        run: |
+          cd scripts/
+          python ../probeinterface/resources/generate_neuropixels_library.py
+
+      # Check for any new probes
+      - name: Run local script
+        run: |
+          # --- USER ACTION REQUIRED ---
+          # Replace this path with the correct path to your local script
+          ls
+          cd scripts/
+          python check_for_new_NP_probes.py
+          rm -r neuropixels_library_generated/
+          cd ..
+          rm -r ./probeinterface
+
+      - name: Commit changes if any
+        id: commit
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+
+          git add imec/*
+
+          # Only commit if there are changes
+          if git diff --staged --quiet; then
+            echo "No changes to commit"
+            echo "changes=false" >> $GITHUB_OUTPUT
+          else
+            git commit -m "Update imec library with new probes"
+            echo "changes=true" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Create pull request to add probes
+        if: steps.commit.outputs.changes == 'true'
+        uses: peter-evans/create-pull-request@v7
+        with:
+          title: "Update library with new Neuropixels probes"
+          body: "This PR updates the probeinterace library with new Neuropixel probes, auto-generated file from the ProbeTable repository."
+          branch-suffix: short-commit-hash
+          base: "main"
