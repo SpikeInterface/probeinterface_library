@@ -1,6 +1,6 @@
 {
     "specification": "probeinterface",
-    "version": "0.2.28",
+    "version": "0.3.1",
     "probes": [
         {
             "ndim": 2,
@@ -14,7 +14,11 @@
                         24.0,
                         -220.0
                     ]
-                ]
+                ],
+                "adc_bit_depth": 10,
+                "num_readout_channels": 384,
+                "ap_sample_frequency_hz": 30000.0,
+                "lf_sample_frequency_hz": 2500.0
             },
             "contact_annotations": {},
             "contact_positions": [
