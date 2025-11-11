@@ -4,8 +4,6 @@ import shutil
 old_dir = Path('../imec')
 new_dir = Path('./neuropixels_library_generated')
 
-new_dir = Path("/Users/christopherhalcrow/Work/fromgit/probeinterface/neuropixels_library_generated")
-
 for temp_probe_directory in new_dir.iterdir():
 
     probe_name = str(temp_probe_directory.name)

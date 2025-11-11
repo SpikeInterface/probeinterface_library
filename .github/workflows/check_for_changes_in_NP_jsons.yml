@@ -24,16 +24,14 @@ jobs:
         with:
           python-version: '3.10' 
 
-      # we just probeinterface to get the version number
+      # we just the release probeinterface to get the version number
       - name: Install probeinterface and matplotlib
         run: |
           pip install probeinterface matplotlib
           PROBEINTERFACE_VERSION=$(pip show probeinterface | grep Version | awk '{print $2}')
-          echo $PROBEINTERFACE_VERSION
           pip uninstall probeinterface --yes
           git clone https://github.com/spikeinterface/probeinterface ./probeinterface
           cd probeinterface
-          ls
           git fetch
           git checkout tags/$PROBEINTERFACE_VERSION
           cd ..
