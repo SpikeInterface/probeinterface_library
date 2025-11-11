@@ -29,7 +29,7 @@ jobs:
         run: |
             pip install probeinterface matplotlib
             PROBEINTERFACE_VERSION=$(pip show pip | grep Version | awk '{print $2}')
-            pip uninstall probeinterface
+            pip uninstall probeinterface --yes
 
 
       #  Clone dev version of probeinterface
