@@ -36,8 +36,10 @@ jobs:
       - name: Clone external repository
         run: |
           git clone https://github.com/spikeinterface/probeinterface ./probeinterface
+          cd probeinterface
           git fetch
           git checkout tags/$PROBEINTERFACE_VERSION
+          cd ..
           pip install ./probeinterface
 
 
