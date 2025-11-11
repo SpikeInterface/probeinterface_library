@@ -37,6 +37,7 @@ jobs:
         run: |
           git clone https://github.com/spikeinterface/probeinterface ./probeinterface
           cd probeinterface
+          ls
           git fetch
           git checkout tags/$PROBEINTERFACE_VERSION
           cd ..
