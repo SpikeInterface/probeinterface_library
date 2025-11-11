@@ -24,13 +24,14 @@ jobs:
         with:
           python-version: '3.10' 
 
-      # we just install probeinterface to get the version number
+      # we just probeinterface to get the version number
       - name: Install probeinterface and matplotlib
         run: |
             pip install probeinterface matplotlib
             PROBEINTERFACE_VERSION=$(pip show pip | grep Version | awk '{print $2}')
             pip uninstall probeinterface
-    
+
+
       #  Clone dev version of probeinterface
       - name: Clone external repository
         run: |
@@ -52,6 +53,7 @@ jobs:
           python check_for_json_changes_in_NP_probes.py
           rm -r neuropixels_library_generated/
           cd ..
+
           rm -r ./probeinterface
 
       - name: Commit changes if any
