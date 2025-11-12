@@ -24,13 +24,19 @@ jobs:
         with:
           python-version: '3.10' 
 
-      #  Clone dev version of probeinterface
-      - name: Clone external repository
-        run: |
-          git clone https://github.com/spikeinterface/probeinterface ./probeinterface
-
+      # we just the release probeinterface to get the version number
       - name: Install probeinterface and matplotlib
-        run: pip install ./probeinterface matplotlib
+        run: |
+          pip install probeinterface matplotlib
+          PROBEINTERFACE_VERSION=$(pip show probeinterface | grep Version | awk '{print $2}')
+          pip uninstall probeinterface --yes
+          git clone https://github.com/spikeinterface/probeinterface ./probeinterface
+          cd probeinterface
+          git fetch
+          git checkout tags/$PROBEINTERFACE_VERSION
+          cd ..
+          pip install ./probeinterface
+
 
       - name: Generate full NP library
         run: |
@@ -40,8 +46,11 @@ jobs:
       # Check for any new probes
       - name: Run local script
         run: |
-          rsync -av --include='*/' --include='*.json' --exclude='*' scripts/neuropixels_library_generated/ imec/
-          rm -r scripts/neuropixels_library_generated/
+          cd scripts/
+          python check_for_json_changes_in_NP_probes.py
+          rm -r neuropixels_library_generated/
+          cd ..
+
           rm -r ./probeinterface
 
       - name: Commit changes if any
