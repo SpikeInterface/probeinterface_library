@@ -29,6 +29,7 @@ jobs:
         run: |
           # probeinterface
           git clone https://github.com/spikeinterface/probeinterface ./probeinterface
+          ls probeinterface/resources
 
           # cambridge neurotech probe maps
           git clone https://github.com/cambridge-neurotech/probe_maps.git ./probe_maps
@@ -38,7 +39,11 @@ jobs:
 
       - name: Generate full cambridge library and check for changes
         run: |
+          pwd
+          ls
           cd scripts/
+          pwd
+          ls
           python ../probeinterface/resources/generate_cambridgeneurotech_library.py ../probe_maps/ ./cambridge_library_generated/
 
           # check for json changes (except probeinterface version)
