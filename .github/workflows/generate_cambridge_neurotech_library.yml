@@ -29,7 +29,6 @@ jobs:
         run: |
           # probeinterface
           git clone https://github.com/spikeinterface/probeinterface ./probeinterface
-          ls probeinterface/resources
 
           # cambridge neurotech probe maps
           git clone https://github.com/cambridge-neurotech/probe_maps.git ./probe_maps
@@ -43,7 +42,7 @@ jobs:
           python ../probeinterface/resources/generate_cambridgeneurotech_library.py ../probe_maps/ --output-folder ./cambridge_library_generated/
 
           # check for json changes (except probeinterface version)
-          python check_for_json_changes_in_probes.py ../cambridgeneurotech/ ./cambridge_library_generated/
+          python check_for_json_changes_in_probes.py ../cambridgeneurotech/ ./cambridge_library_generated/ --copy-figures
           # clean up
           rm -r cambridge_library_generated/
           cd ..
@@ -62,7 +61,7 @@ jobs:
             echo "No changes to commit"
             echo "changes=false" >> $GITHUB_OUTPUT
           else
-            git commit -m "Update json files for NP probes"
+            git commit -m "Update json files for cambridge neurotech probes"
             echo "changes=true" >> $GITHUB_OUTPUT
           fi
 
