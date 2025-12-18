@@ -1,8 +1,8 @@
-name: Check for changes in NP json files
+name: Generate Cambridge Neurotech library
 
 on:
   schedule:
-    - cron: '0 0 * * 2' # Every Tuesday at 00:00 UTC
+    - cron: '0 1 * * 1' # Every Monday at 01:00 UTC
   workflow_dispatch:
 
 # Grant permissions for the job to write to contents (push) and create PRs.
@@ -24,29 +24,31 @@ jobs:
         with:
           python-version: '3.10' 
 
-      # we just the release probeinterface to get the version number
-      - name: Install probeinterface and matplotlib
+      #  Clone dev version of probeinterface
+      - name: Clone external repositories
         run: |
-          pip install probeinterface matplotlib
-          PROBEINTERFACE_VERSION=$(pip show probeinterface | grep Version | awk '{print $2}')
-          pip uninstall probeinterface --yes
-          git clone https://github.com/spikeinterface/probeinterface ./probeinterface
+          # probeinterface
+          git clone https://github.com/samuelgarcia/probeinterface ./probeinterface
+          # for now, we checkout the two-sided branch
           cd probeinterface
-          git fetch
-          git checkout tags/$PROBEINTERFACE_VERSION
+          git checkout two_side_probes
           cd ..
-          pip install ./probeinterface
 
+          # cambridge neurotech probe maps
+          git clone https://github.com/cambridge-neurotech/probe_maps.git ./probe_maps
 
-      - name: Generate full NP library and check for changes
+      - name: Install probeinterface and matplotlib
+        run: pip install ./probeinterface matplotlib
+
+      - name: Generate full cambridge library and check for changes
         run: |
           cd scripts/
-          # generate full library
-          python ../probeinterface/resources/generate_neuropixels_library.py
+          python ../probeinterface/resources/generate_cambridgeneurotech_library.py ../probe_maps/ ./cambridge_library_generated/
+
           # check for json changes (except probeinterface version)
-          python check_for_json_changes_in_probes.py ../imec/ ./neuropixels_library_generated/
+          python check_for_json_changes_in_probes.py ../cambridgeneurotech/ ./cambridge_library_generated/
           # clean up
-          rm -r neuropixels_library_generated/
+          rm -r cambridge_library_generated/
           cd ..
           rm -r ./probeinterface
 
@@ -56,7 +58,7 @@ jobs:
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
 
-          git add imec/*
+          git add cambridgeneurotech/*
 
           # Only commit if there are changes
           if git diff --staged --quiet; then
@@ -71,7 +73,7 @@ jobs:
         if: steps.commit.outputs.changes == 'true'
         uses: peter-evans/create-pull-request@v7
         with:
-          title: "Update Neuropixels json files"
+          title: "Update Cambridge Neurotech json files"
           body: "This PR updates the Neuropixel probes in probeinterace library, based on new data from the ProbeTable repository or because of a new ProbeInterface release."
           branch-suffix: short-commit-hash
           base: "main"
