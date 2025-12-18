@@ -28,11 +28,7 @@ jobs:
       - name: Clone external repositories
         run: |
           # probeinterface
-          git clone https://github.com/samuelgarcia/probeinterface ./probeinterface
-          # for now, we checkout the two-sided branch
-          cd probeinterface
-          git checkout two_side_probes
-          cd ..
+          git clone https://github.com/spikeinterface/probeinterface ./probeinterface
 
           # cambridge neurotech probe maps
           git clone https://github.com/cambridge-neurotech/probe_maps.git ./probe_maps
