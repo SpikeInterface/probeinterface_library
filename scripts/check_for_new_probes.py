@@ -5,12 +5,12 @@ import shutil
 
 parser = ArgumentParser(description="Check for new probes from manufacturer")
 parser.add_argument(
-    "old-dir",
+    "old_dir",
     type=str,
     help="Path to the old probes directory",
 )
 parser.add_argument(
-    "new-dir",
+    "new_dir",
     type=str,
     help="Path to the new probes directory",
 )
