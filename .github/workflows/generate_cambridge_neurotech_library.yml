@@ -35,7 +35,7 @@ jobs:
           git clone https://github.com/cambridge-neurotech/probe_maps.git ./probe_maps
 
       - name: Install probeinterface and dependencies
-        run: pip install ./probeinterface matplotlib pandas shapely openpyxl
+        run: pip install ./probeinterface matplotlib pandas shapely openpyxl tqdm
 
       - name: Generate full cambridge library and check for changes
         run: |
