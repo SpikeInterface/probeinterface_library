@@ -40,7 +40,7 @@ jobs:
       - name: Generate full cambridge library and check for changes
         run: |
           cd scripts/
-          python ../probeinterface/resources/generate_cambridgeneurotech_library.py ../probe_maps/ ./cambridge_library_generated/
+          python ../probeinterface/resources/generate_cambridgeneurotech_library.py ../probe_maps/ --output-folder ./cambridge_library_generated/
 
           # check for json changes (except probeinterface version)
           python check_for_json_changes_in_probes.py ../cambridgeneurotech/ ./cambridge_library_generated/
