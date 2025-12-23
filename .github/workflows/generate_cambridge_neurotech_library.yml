@@ -50,6 +50,7 @@ jobs:
           rm -r cambridge_library_generated/
           cd ..
           rm -r ./probeinterface
+          rm -r ./probe_maps
 
       - name: Commit changes if any
         id: commit
