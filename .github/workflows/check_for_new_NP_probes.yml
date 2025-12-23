@@ -32,16 +32,14 @@ jobs:
       - name: Install probeinterface and matplotlib
         run: pip install ./probeinterface matplotlib
 
-      - name: Generate full NP library
+      - name: Generate full NP library and check for new probes
         run: |
           cd scripts/
           python ../probeinterface/resources/generate_neuropixels_library.py
+          # check for new probes
+          python check_for_new_probes.py ../imec/ ./neuropixels_library_generated/
 
-      # Check for any new probes
-      - name: Run local script
-        run: |
-          cd scripts/
-          python check_for_new_NP_probes.py
+          # clean up
           rm -r neuropixels_library_generated/
           cd ..
           rm -r ./probeinterface

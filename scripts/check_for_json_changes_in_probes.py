@@ -17,6 +17,12 @@ parser.add_argument(
     help="Path to the new probes directory",
 )
 
+parser.add_argument(
+    "--copy-figures",
+    action="store_true",
+    help="If set, copies figures as well when JSON files are different.",
+)
+
 
 if __name__ == "__main__":
     args = parser.parse_args()
@@ -40,5 +46,11 @@ if __name__ == "__main__":
             if lines1[3:] == lines2[3:]:
                 continue
             else:
-                shutil.copy(f"{temp_probe_json_path}", f"../imec/{probe_name}")
+                shutil.copy(f"{temp_probe_json_path}", old_dir / probe_name)
+                if args.copy_figures:
+                    temp_figure_path = temp_probe_directory / (probe_name + '.png')
+                    shutil.copy(f"{temp_figure_path}", old_dir / probe_name)
+                
+                
+                            
     
