@@ -1,13 +1,13 @@
 {
     "specification": "probeinterface",
-    "version": "0.2.24",
+    "version": "0.3.2",
     "probes": [
         {
             "ndim": 2,
             "si_units": "um",
             "annotations": {
-                "model_name": "ASSY-276-E-1",
-                "manufacturer": "cambridgeneurotech"
+                "manufacturer": "cambridgeneurotech",
+                "model_name": "ASSY-276-E-1"
             },
             "contact_annotations": {},
             "contact_positions": [
@@ -978,382 +978,422 @@
             ],
             "contact_shape_params": [
                 {
-                    "width": 11,
-                    "height": 15
+                    "width": 11.0,
+                    "height": 15.0
                 },
                 {
-                    "width": 11,
-                    "height": 15
+                    "width": 11.0,
+                    "height": 15.0
                 },
                 {
-                    "width": 11,
-                    "height": 15
+                    "width": 11.0,
+                    "height": 15.0
                 },
                 {
-                    "width": 11,
-                    "height": 15
+                    "width": 11.0,
+                    "height": 15.0
                 },
                 {
-                    "width": 11,
-                    "height": 15
+                    "width": 11.0,
+                    "height": 15.0
                 },
                 {
-                    "width": 11,
-                    "height": 15
+                    "width": 11.0,
+                    "height": 15.0
                 },
                 {
-                    "width": 11,
-                    "height": 15
+                    "width": 11.0,
+                    "height": 15.0
                 },
                 {
-                    "width": 11,
-                    "height": 15
+                    "width": 11.0,
+                    "height": 15.0
                 },
                 {
-                    "width": 11,
-                    "height": 15
+                    "width": 11.0,
+                    "height": 15.0
                 },
                 {
-                    "width": 11,
-                    "height": 15
+                    "width": 11.0,
+                    "height": 15.0
                 },
                 {
-                    "width": 11,
-                    "height": 15
+                    "width": 11.0,
+                    "height": 15.0
                 },
                 {
-                    "width": 11,
-                    "height": 15
+                    "width": 11.0,
+                    "height": 15.0
                 },
                 {
-                    "width": 11,
-                    "height": 15
+                    "width": 11.0,
+                    "height": 15.0
                 },
                 {
-                    "width": 11,
-                    "height": 15
+                    "width": 11.0,
+                    "height": 15.0
                 },
                 {
-                    "width": 11,
-                    "height": 15
+                    "width": 11.0,
+                    "height": 15.0
                 },
                 {
-                    "width": 11,
-                    "height": 15
+                    "width": 11.0,
+                    "height": 15.0
                 },
                 {
-                    "width": 11,
-                    "height": 15
+                    "width": 11.0,
+                    "height": 15.0
                 },
                 {
-                    "width": 11,
-                    "height": 15
+                    "width": 11.0,
+                    "height": 15.0
                 },
                 {
-                    "width": 11,
-                    "height": 15
+                    "width": 11.0,
+                    "height": 15.0
                 },
                 {
-                    "width": 11,
-                    "height": 15
+                    "width": 11.0,
+                    "height": 15.0
                 },
                 {
-                    "width": 11,
-                    "height": 15
+                    "width": 11.0,
+                    "height": 15.0
                 },
                 {
-                    "width": 11,
-                    "height": 15
+                    "width": 11.0,
+                    "height": 15.0
                 },
                 {
-                    "width": 11,
-                    "height": 15
+                    "width": 11.0,
+                    "height": 15.0
                 },
                 {
-                    "width": 11,
-                    "height": 15
+                    "width": 11.0,
+                    "height": 15.0
                 },
                 {
-                    "width": 11,
-                    "height": 15
+                    "width": 11.0,
+                    "height": 15.0
                 },
                 {
-                    "width": 11,
-                    "height": 15
+                    "width": 11.0,
+                    "height": 15.0
                 },
                 {
-                    "width": 11,
-                    "height": 15
+                    "width": 11.0,
+                    "height": 15.0
                 },
                 {
-                    "width": 11,
-                    "height": 15
+                    "width": 11.0,
+                    "height": 15.0
                 },
                 {
-                    "width": 11,
-                    "height": 15
+                    "width": 11.0,
+                    "height": 15.0
                 },
                 {
-                    "width": 11,
-                    "height": 15
+                    "width": 11.0,
+                    "height": 15.0
                 },
                 {
-                    "width": 11,
-                    "height": 15
+                    "width": 11.0,
+                    "height": 15.0
                 },
                 {
-                    "width": 11,
-                    "height": 15
+                    "width": 11.0,
+                    "height": 15.0
                 },
                 {
-                    "width": 11,
-                    "height": 15
+                    "width": 11.0,
+                    "height": 15.0
                 },
                 {
-                    "width": 11,
-                    "height": 15
+                    "width": 11.0,
+                    "height": 15.0
                 },
                 {
-                    "width": 11,
-                    "height": 15
+                    "width": 11.0,
+                    "height": 15.0
                 },
                 {
-                    "width": 11,
-                    "height": 15
+                    "width": 11.0,
+                    "height": 15.0
                 },
                 {
-                    "width": 11,
-                    "height": 15
+                    "width": 11.0,
+                    "height": 15.0
                 },
                 {
-                    "width": 11,
-                    "height": 15
+                    "width": 11.0,
+                    "height": 15.0
                 },
                 {
-                    "width": 11,
-                    "height": 15
+                    "width": 11.0,
+                    "height": 15.0
                 },
                 {
-                    "width": 11,
-                    "height": 15
+                    "width": 11.0,
+                    "height": 15.0
                 },
                 {
-                    "width": 11,
-                    "height": 15
+                    "width": 11.0,
+                    "height": 15.0
                 },
                 {
-                    "width": 11,
-                    "height": 15
+                    "width": 11.0,
+                    "height": 15.0
                 },
                 {
-                    "width": 11,
-                    "height": 15
+                    "width": 11.0,
+                    "height": 15.0
                 },
                 {
-                    "width": 11,
-                    "height": 15
+                    "width": 11.0,
+                    "height": 15.0
                 },
                 {
-                    "width": 11,
-                    "height": 15
+                    "width": 11.0,
+                    "height": 15.0
                 },
                 {
-                    "width": 11,
-                    "height": 15
+                    "width": 11.0,
+                    "height": 15.0
                 },
                 {
-                    "width": 11,
-                    "height": 15
+                    "width": 11.0,
+                    "height": 15.0
                 },
                 {
-                    "width": 11,
-                    "height": 15
+                    "width": 11.0,
+                    "height": 15.0
                 },
                 {
-                    "width": 11,
-                    "height": 15
+                    "width": 11.0,
+                    "height": 15.0
                 },
                 {
-                    "width": 11,
-                    "height": 15
+                    "width": 11.0,
+                    "height": 15.0
                 },
                 {
-                    "width": 11,
-                    "height": 15
+                    "width": 11.0,
+                    "height": 15.0
                 },
                 {
-                    "width": 11,
-                    "height": 15
+                    "width": 11.0,
+                    "height": 15.0
                 },
                 {
-                    "width": 11,
-                    "height": 15
+                    "width": 11.0,
+                    "height": 15.0
                 },
                 {
-                    "width": 11,
-                    "height": 15
+                    "width": 11.0,
+                    "height": 15.0
                 },
                 {
-                    "width": 11,
-                    "height": 15
+                    "width": 11.0,
+                    "height": 15.0
                 },
                 {
-                    "width": 11,
-                    "height": 15
+                    "width": 11.0,
+                    "height": 15.0
                 },
                 {
-                    "width": 11,
-                    "height": 15
+                    "width": 11.0,
+                    "height": 15.0
                 },
                 {
-                    "width": 11,
-                    "height": 15
+                    "width": 11.0,
+                    "height": 15.0
                 },
                 {
-                    "width": 11,
-                    "height": 15
+                    "width": 11.0,
+                    "height": 15.0
                 },
                 {
-                    "width": 11,
-                    "height": 15
+                    "width": 11.0,
+                    "height": 15.0
                 },
                 {
-                    "width": 11,
-                    "height": 15
+                    "width": 11.0,
+                    "height": 15.0
                 },
                 {
-                    "width": 11,
-                    "height": 15
+                    "width": 11.0,
+                    "height": 15.0
                 },
                 {
-                    "width": 11,
-                    "height": 15
+                    "width": 11.0,
+                    "height": 15.0
                 },
                 {
-                    "width": 11,
-                    "height": 15
+                    "width": 11.0,
+                    "height": 15.0
                 }
             ],
             "probe_planar_contour": [
                 [
-                    -37.0,
-                    465.0
+                    -37,
+                    6000
                 ],
                 [
-                    -37.0,
-                    425.0
+                    -37,
+                    5800
                 ],
                 [
-                    -37.0,
-                    295.0
+                    -37,
+                    465
                 ],
                 [
-                    -14.0,
-                    15.0
+                    -37,
+                    425
                 ],
                 [
-                    0.0,
-                    -22.0
+                    -37,
+                    295
                 ],
                 [
-                    14.0,
-                    34.0
+                    -14,
+                    15
                 ],
                 [
-                    33.0,
-                    295.0
+                    0,
+                    -22
                 ],
                 [
-                    33.0,
-                    425.0
+                    14,
+                    34
                 ],
                 [
-                    213.0,
-                    425.0
+                    33,
+                    295
                 ],
                 [
-                    213.0,
-                    295.0
+                    33,
+                    425
                 ],
                 [
-                    236.0,
-                    15.0
+                    33,
+                    5800
                 ],
                 [
-                    250.0,
-                    -22.0
+                    213,
+                    5800
                 ],
                 [
-                    264.0,
-                    34.0
+                    213,
+                    425
                 ],
                 [
-                    283.0,
-                    295.0
+                    213,
+                    295
                 ],
                 [
-                    283.0,
-                    425.0
+                    236,
+                    15
                 ],
                 [
-                    463.0,
-                    425.0
+                    250,
+                    -22
                 ],
                 [
-                    463.0,
-                    295.0
+                    264,
+                    34
                 ],
                 [
-                    486.0,
-                    15.0
+                    283,
+                    295
                 ],
                 [
-                    500.0,
-                    -22.0
+                    283,
+                    425
                 ],
                 [
-                    514.0,
-                    34.0
+                    283,
+                    5800
                 ],
                 [
-                    533.0,
-                    295.0
+                    463,
+                    5800
                 ],
                 [
-                    533.0,
-                    425.0
+                    463,
+                    425
                 ],
                 [
-                    713.0,
-                    425.0
+                    463,
+                    295
                 ],
                 [
-                    713.0,
-                    295.0
+                    486,
+                    15
                 ],
                 [
-                    736.0,
-                    15.0
+                    500,
+                    -22
                 ],
                 [
-                    750.0,
-                    -22.0
+                    514,
+                    34
                 ],
                 [
-                    764.0,
-                    34.0
+                    533,
+                    295
                 ],
                 [
-                    783.0,
-                    295.0
+                    533,
+                    425
                 ],
                 [
-                    783.0,
-                    425.0
+                    533,
+                    5800
                 ],
                 [
-                    783.0,
-                    465.0
+                    713,
+                    5800
+                ],
+                [
+                    713,
+                    425
+                ],
+                [
+                    713,
+                    295
+                ],
+                [
+                    736,
+                    15
+                ],
+                [
+                    750,
+                    -22
+                ],
+                [
+                    764,
+                    34
+                ],
+                [
+                    783,
+                    295
+                ],
+                [
+                    783,
+                    425
+                ],
+                [
+                    783,
+                    465
+                ],
+                [
+                    783,
+                    5800
+                ],
+                [
+                    783,
+                    6000
                 ]
             ],
             "contact_ids": [
