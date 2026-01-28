@@ -1,13 +1,13 @@
 {
     "specification": "probeinterface",
-    "version": "0.2.24",
+    "version": "0.3.2",
     "probes": [
         {
             "ndim": 2,
             "si_units": "um",
             "annotations": {
-                "model_name": "ASSY-116-H8b",
-                "manufacturer": "cambridgeneurotech"
+                "manufacturer": "cambridgeneurotech",
+                "model_name": "ASSY-116-H8b"
             },
             "contact_annotations": {},
             "contact_positions": [
@@ -498,158 +498,154 @@
             ],
             "contact_shape_params": [
                 {
-                    "width": 11,
-                    "height": 15
+                    "width": 11.0,
+                    "height": 15.0
                 },
                 {
-                    "width": 11,
-                    "height": 15
+                    "width": 11.0,
+                    "height": 15.0
                 },
                 {
-                    "width": 11,
-                    "height": 15
+                    "width": 11.0,
+                    "height": 15.0
                 },
                 {
-                    "width": 11,
-                    "height": 15
+                    "width": 11.0,
+                    "height": 15.0
                 },
                 {
-                    "width": 11,
-                    "height": 15
+                    "width": 11.0,
+                    "height": 15.0
                 },
                 {
-                    "width": 11,
-                    "height": 15
+                    "width": 11.0,
+                    "height": 15.0
                 },
                 {
-                    "width": 11,
-                    "height": 15
+                    "width": 11.0,
+                    "height": 15.0
                 },
                 {
-                    "width": 11,
-                    "height": 15
+                    "width": 11.0,
+                    "height": 15.0
                 },
                 {
-                    "width": 11,
-                    "height": 15
+                    "width": 11.0,
+                    "height": 15.0
                 },
                 {
-                    "width": 11,
-                    "height": 15
+                    "width": 11.0,
+                    "height": 15.0
                 },
                 {
-                    "width": 11,
-                    "height": 15
+                    "width": 11.0,
+                    "height": 15.0
                 },
                 {
-                    "width": 11,
-                    "height": 15
+                    "width": 11.0,
+                    "height": 15.0
                 },
                 {
-                    "width": 11,
-                    "height": 15
+                    "width": 11.0,
+                    "height": 15.0
                 },
                 {
-                    "width": 11,
-                    "height": 15
+                    "width": 11.0,
+                    "height": 15.0
                 },
                 {
-                    "width": 11,
-                    "height": 15
+                    "width": 11.0,
+                    "height": 15.0
                 },
                 {
-                    "width": 11,
-                    "height": 15
+                    "width": 11.0,
+                    "height": 15.0
                 },
                 {
-                    "width": 11,
-                    "height": 15
+                    "width": 11.0,
+                    "height": 15.0
                 },
                 {
-                    "width": 11,
-                    "height": 15
+                    "width": 11.0,
+                    "height": 15.0
                 },
                 {
-                    "width": 11,
-                    "height": 15
+                    "width": 11.0,
+                    "height": 15.0
                 },
                 {
-                    "width": 11,
-                    "height": 15
+                    "width": 11.0,
+                    "height": 15.0
                 },
                 {
-                    "width": 11,
-                    "height": 15
+                    "width": 11.0,
+                    "height": 15.0
                 },
                 {
-                    "width": 11,
-                    "height": 15
+                    "width": 11.0,
+                    "height": 15.0
                 },
                 {
-                    "width": 11,
-                    "height": 15
+                    "width": 11.0,
+                    "height": 15.0
                 },
                 {
-                    "width": 11,
-                    "height": 15
+                    "width": 11.0,
+                    "height": 15.0
                 },
                 {
-                    "width": 11,
-                    "height": 15
+                    "width": 11.0,
+                    "height": 15.0
                 },
                 {
-                    "width": 11,
-                    "height": 15
+                    "width": 11.0,
+                    "height": 15.0
                 },
                 {
-                    "width": 11,
-                    "height": 15
+                    "width": 11.0,
+                    "height": 15.0
                 },
                 {
-                    "width": 11,
-                    "height": 15
+                    "width": 11.0,
+                    "height": 15.0
                 },
                 {
-                    "width": 11,
-                    "height": 15
+                    "width": 11.0,
+                    "height": 15.0
                 },
                 {
-                    "width": 11,
-                    "height": 15
+                    "width": 11.0,
+                    "height": 15.0
                 },
                 {
-                    "width": 11,
-                    "height": 15
+                    "width": 11.0,
+                    "height": 15.0
                 },
                 {
-                    "width": 11,
-                    "height": 15
+                    "width": 11.0,
+                    "height": 15.0
                 }
             ],
             "probe_planar_contour": [
                 [
-                    -15.0,
-                    950.0
+                    -27.25,
+                    9000.0
                 ],
                 [
-                    -15.0,
-                    -40.0
+                    49.75,
+                    9000.0
                 ],
                 [
-                    18.0,
-                    -100.0
+                    49.75,
+                    -12.83333333333333
                 ],
                 [
-                    30.0,
-                    -45.0
+                    11.25,
+                    -64.16666666666667
                 ],
                 [
-                    45.0,
-                    78.0
-                ],
-                [
-                    45.0,
-                    950.0
+                    -27.25,
+                    -12.83333333333333
                 ]
             ],
             "contact_ids": [
@@ -685,40 +681,6 @@
                 "30",
                 "31",
                 "32"
-            ],
-            "shank_ids": [
-                "",
-                "",
-                "",
-                "",
-                "",
-                "",
-                "",
-                "",
-                "",
-                "",
-                "",
-                "",
-                "",
-                "",
-                "",
-                "",
-                "",
-                "",
-                "",
-                "",
-                "",
-                "",
-                "",
-                "",
-                "",
-                "",
-                "",
-                "",
-                "",
-                "",
-                "",
-                ""
             ]
         }
     ]
