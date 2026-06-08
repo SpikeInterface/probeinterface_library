@@ -562,6 +562,12 @@ export const ProbeCanvas = forwardRef<HTMLCanvasElement, ProbeCanvasProps>(
           ref={canvasRef}
           role="img"
           aria-label={`${entry.displayName} planar layout`}
+          // Reflect the current view state onto the DOM so end-to-end tests can
+          // read it directly (instead of parsing the hash). These mirror the URL
+          // params: cx/cy are omitted at the default view, exactly like the URL.
+          data-zoom={zoom}
+          data-view-cx={viewCenterX ?? undefined}
+          data-view-cy={viewCenterY ?? undefined}
           onPointerDown={handlePointerDown}
           onPointerMove={handlePointerMove}
           onPointerUp={handlePointerUp}
