@@ -1,6 +1,8 @@
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import { useAppStore } from "../state/useAppStore";
+import type { ManifestEntry } from "../types/probe";
+import { groupNeuropixels, variantLabel } from "../utils/neuropixelsGrouping";
 
 const MANUFACTURER_DISPLAY_NAMES: Record<string, string> = {
   cambridgeneurotech: "Cambridge NeuroTech",
@@ -59,6 +61,60 @@ export function Sidebar() {
     }
   }, [filteredEntries, selectedProbeId, selectProbe]);
 
+  // Neuropixels (imec) gets a hierarchy-grouped list (platform -> family);
+  // every other manufacturer keeps the simple flat list.
+  const isNeuropixels = selectedManufacturer === "imec";
+  const groups = useMemo(
+    () => (isNeuropixels ? groupNeuropixels(filteredEntries) : []),
+    [isNeuropixels, filteredEntries],
+  );
+
+  // Both levels start collapsed (empty expanded sets). A platform shows its
+  // families only when expanded; a family shows its probes only when expanded.
+  const [expandedPlatforms, setExpandedPlatforms] = useState<Set<string>>(
+    () => new Set(),
+  );
+  const [expandedFamilies, setExpandedFamilies] = useState<Set<string>>(
+    () => new Set(),
+  );
+  const togglePlatform = (platform: string) =>
+    setExpandedPlatforms((prev) => {
+      const next = new Set(prev);
+      if (next.has(platform)) next.delete(platform);
+      else next.add(platform);
+      return next;
+    });
+  const toggleFamily = (key: string) =>
+    setExpandedFamilies((prev) => {
+      const next = new Set(prev);
+      if (next.has(key)) next.delete(key);
+      else next.add(key);
+      return next;
+    });
+
+  const renderItem = (entry: ManifestEntry, showVariant: boolean) => (
+    <button
+      key={entry.id}
+      type="button"
+      className={
+        entry.id === selectedProbeId
+          ? "sidebar-item sidebar-item--active"
+          : "sidebar-item"
+      }
+      onClick={() => selectProbe(entry.id)}
+    >
+      <span className="sidebar-item-name">
+        {entry.displayName}
+        {showVariant && variantLabel(entry) ? (
+          <span className="sidebar-item-variant"> {variantLabel(entry)}</span>
+        ) : null}
+      </span>
+      <span className="sidebar-item-meta">
+        {entry.contactCount} contacts · {entry.shankCount} shanks
+      </span>
+    </button>
+  );
+
   return (
     <div className="sidebar">
       <header className="sidebar-header">
@@ -110,23 +166,73 @@ export function Sidebar() {
         {manifestStatus === "success" && filteredEntries.length === 0 && (
           <p className="sidebar-hint">No probes match the current filters.</p>
         )}
-        {filteredEntries.map((entry) => (
-          <button
-            key={entry.id}
-            type="button"
-            className={
-              entry.id === selectedProbeId
-                ? "sidebar-item sidebar-item--active"
-                : "sidebar-item"
-            }
-            onClick={() => selectProbe(entry.id)}
-          >
-            <span className="sidebar-item-name">{entry.displayName}</span>
-            <span className="sidebar-item-meta">
-              {entry.contactCount} contacts · {entry.shankCount} shanks
-            </span>
-          </button>
-        ))}
+
+        {manifestStatus === "success" &&
+          !isNeuropixels &&
+          filteredEntries.map((entry) => renderItem(entry, false))}
+
+        {manifestStatus === "success" &&
+          isNeuropixels &&
+          groups.map((group) => {
+            const platformOpen = expandedPlatforms.has(group.platform);
+            return (
+              <div className="sidebar-group" key={group.platform}>
+                <button
+                  type="button"
+                  className="sidebar-group-header"
+                  aria-expanded={platformOpen}
+                  onClick={() => togglePlatform(group.platform)}
+                >
+                  <span className="sidebar-group-caret">
+                    {platformOpen ? "▾" : "▸"}
+                  </span>
+                  <span className="sidebar-group-title">{group.platform}</span>
+                  <span className="sidebar-group-count">{group.count}</span>
+                </button>
+                {platformOpen &&
+                  group.families.map((fam) => {
+                    const familyKey = `${group.platform}||${fam.family}`;
+                    const familyOpen = expandedFamilies.has(familyKey);
+                    return (
+                      <div className="sidebar-subgroup" key={fam.family}>
+                        <button
+                          type="button"
+                          className="sidebar-subgroup-header"
+                          aria-expanded={familyOpen}
+                          onClick={() => toggleFamily(familyKey)}
+                        >
+                          <span className="sidebar-group-caret">
+                            {familyOpen ? "▾" : "▸"}
+                          </span>
+                          <span className="sidebar-subgroup-title">
+                            {fam.family}
+                          </span>
+                          <span className="sidebar-group-count">
+                            {fam.entries.length}
+                          </span>
+                        </button>
+                        {familyOpen &&
+                          fam.subgroups.map((sub) => (
+                            <div
+                              className="sidebar-subdivision"
+                              key={sub.label || "_flat"}
+                            >
+                              {sub.label && (
+                                <p className="sidebar-subgroup-divider">
+                                  {sub.label}
+                                </p>
+                              )}
+                              {sub.entries.map((entry) =>
+                                renderItem(entry, true),
+                              )}
+                            </div>
+                          ))}
+                      </div>
+                    );
+                  })}
+              </div>
+            );
+          })}
       </div>
     </div>
   );

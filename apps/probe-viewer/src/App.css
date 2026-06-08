@@ -128,6 +128,105 @@
   color: #475569;
 }
 
+.sidebar-item-variant {
+  font-weight: 400;
+  color: #64748b;
+  font-size: 0.85rem;
+}
+
+/* Neuropixels hierarchy grouping */
+.sidebar-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.sidebar-group-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+  padding: 0.45rem 0.4rem;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  color: #0f172a;
+  font-weight: 700;
+  font-size: 0.95rem;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.35);
+}
+
+.sidebar-group-header:hover {
+  color: #2563eb;
+}
+
+.sidebar-group-caret {
+  width: 1rem;
+  color: #64748b;
+}
+
+.sidebar-group-title {
+  flex: 1;
+  text-align: left;
+}
+
+.sidebar-group-count {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #475569;
+  background: rgba(148, 163, 184, 0.25);
+  border-radius: 999px;
+  padding: 0.05rem 0.5rem;
+}
+
+.sidebar-subgroup {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  padding-left: 0.6rem;
+}
+
+.sidebar-subgroup-header {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  width: 100%;
+  padding: 0.3rem 0.25rem;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+}
+
+.sidebar-subgroup-header:hover .sidebar-subgroup-title {
+  color: #2563eb;
+}
+
+.sidebar-subgroup-title {
+  flex: 1;
+  text-align: left;
+  font-size: 0.74rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: #64748b;
+}
+
+.sidebar-subdivision {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+/* Static (non-collapsible) length divider inside the Non-human-primate family. */
+.sidebar-subgroup-divider {
+  margin: 0.3rem 0 0.05rem 0.9rem;
+  font-size: 0.68rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #94a3b8;
+}
+
 .sidebar-hint {
   font-size: 0.9rem;
   color: #64748b;
