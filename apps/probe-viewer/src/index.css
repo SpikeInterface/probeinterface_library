@@ -19,7 +19,9 @@
 body {
   margin: 0;
   min-width: 320px;
-  min-height: 100vh;
+  height: 100vh; /* fallback for browsers without dvh */
+  height: 100dvh; /* tracks the visible area as mobile browser chrome changes */
+  overflow: hidden; /* the document itself never scrolls; panels scroll internally */
   background-color: inherit;
   color: inherit;
 }
@@ -29,5 +31,5 @@ a {
 }
 
 #root {
-  min-height: 100vh;
+  height: 100%;
 }

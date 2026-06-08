@@ -2,8 +2,8 @@ import type { ProbeInterfaceFile, ContactShapeParams } from "../types/probe";
 
 interface ExportViewState {
   zoom: number;
-  panX: number;
-  panY: number;
+  viewCenterX: number | null;
+  viewCenterY: number | null;
 }
 
 interface CanvasSize {
@@ -59,13 +59,14 @@ function computeGeometrySummary(probeData: ProbeInterfaceFile): GeometrySummary 
 
 /**
  * Export probe visualization as PNG with white background.
- * Re-renders the probe without scale bar or contact IDs.
+ * Re-renders the probe without contact IDs. Scale bar included if enabled.
  */
 export function exportProbeAsPng(
   probeData: ProbeInterfaceFile,
   viewState: ExportViewState,
   canvasSize: CanvasSize,
-  filename: string
+  filename: string,
+  showScaleBar: boolean
 ): void {
   const canvas = document.createElement("canvas");
   const dpr = window.devicePixelRatio || 1;
@@ -81,8 +82,8 @@ export function exportProbeAsPng(
   ctx.fillStyle = "#ffffff";
   ctx.fillRect(0, 0, canvasSize.width, canvasSize.height);
 
-  // Render probe (no scale bar, no IDs)
-  renderProbeToContext(ctx, probeData, viewState, canvasSize);
+  // Render probe (no contact IDs, scale bar if enabled)
+  renderProbeToContext(ctx, probeData, viewState, canvasSize, showScaleBar);
 
   // Download
   const link = document.createElement("a");
@@ -93,15 +94,16 @@ export function exportProbeAsPng(
 
 /**
  * Export probe visualization as SVG with transparent background.
- * Re-renders the probe without scale bar or contact IDs.
+ * Re-renders the probe without contact IDs. Scale bar included if enabled.
  */
 export function exportProbeAsSvg(
   probeData: ProbeInterfaceFile,
   viewState: ExportViewState,
   canvasSize: CanvasSize,
-  filename: string
+  filename: string,
+  showScaleBar: boolean
 ): void {
-  const svgString = generateProbeSvgString(probeData, viewState, canvasSize);
+  const svgString = generateProbeSvgString(probeData, viewState, canvasSize, showScaleBar);
   const blob = new Blob([svgString], { type: "image/svg+xml" });
   const link = document.createElement("a");
   link.download = filename;
@@ -112,20 +114,25 @@ export function exportProbeAsSvg(
 
 /**
  * Render probe to a 2D canvas context (used for PNG export).
- * Mirrors the ProbeCanvas rendering logic but without scale bar or contact IDs.
+ * Mirrors the ProbeCanvas rendering logic but without contact IDs.
  */
 function renderProbeToContext(
   ctx: CanvasRenderingContext2D,
   probeData: ProbeInterfaceFile,
   viewState: ExportViewState,
-  canvasSize: CanvasSize
+  canvasSize: CanvasSize,
+  showScaleBar: boolean
 ): void {
   const geometry = computeGeometrySummary(probeData);
   const probe = probeData.probes?.[0];
   if (!geometry || !probe) return;
 
-  const { zoom, panX, panY } = viewState;
+  const { zoom, viewCenterX, viewCenterY } = viewState;
   const { width: widthPx, height: heightPx } = canvasSize;
+
+  // Calculate effective view center (use geometry center if null)
+  const effectiveViewCenterX = viewCenterX ?? geometry.centerX;
+  const effectiveViewCenterY = viewCenterY ?? geometry.centerY;
 
   const padding = 40;
   const availableWidth = Math.max(10, widthPx - padding * 2);
@@ -135,6 +142,10 @@ function renderProbeToContext(
     availableHeight / geometry.height
   );
   const scale = baseScale * zoom;
+
+  // Calculate pixel pan from view center
+  const panX = (geometry.centerX - effectiveViewCenterX) * scale;
+  const panY = (effectiveViewCenterY - geometry.centerY) * scale;
 
   const offsetX = widthPx / 2 + panX;
   const offsetY = heightPx / 2 + panY;
@@ -236,16 +247,70 @@ function renderProbeToContext(
     ctx.fill();
     ctx.stroke();
   });
+
+  // Scale bar (L-shaped, bottom-left corner)
+  if (showScaleBar) {
+    const niceNumbers = [1, 2, 5, 10, 25, 50, 100, 250, 500, 1000, 2500, 5000];
+    const targetPixels = 80;
+    const targetUm = targetPixels / scale;
+    const scaleBarUm = niceNumbers.reduce((prev, curr) =>
+      Math.abs(curr - targetUm) < Math.abs(prev - targetUm) ? curr : prev
+    );
+    const scaleBarPixels = scaleBarUm * scale;
+
+    const margin = 20;
+    const cornerX = margin;
+    const cornerY = heightPx - margin;
+    const tickSize = 4;
+
+    ctx.strokeStyle = "rgba(15, 23, 42, 0.9)";
+    ctx.lineWidth = 2;
+    ctx.lineCap = "square";
+
+    // Draw L shape
+    ctx.beginPath();
+    ctx.moveTo(cornerX, cornerY);
+    ctx.lineTo(cornerX, cornerY - scaleBarPixels);
+    ctx.moveTo(cornerX, cornerY);
+    ctx.lineTo(cornerX + scaleBarPixels, cornerY);
+    ctx.stroke();
+
+    // End ticks
+    ctx.beginPath();
+    ctx.moveTo(cornerX - tickSize, cornerY - scaleBarPixels);
+    ctx.lineTo(cornerX + tickSize, cornerY - scaleBarPixels);
+    ctx.moveTo(cornerX + scaleBarPixels, cornerY - tickSize);
+    ctx.lineTo(cornerX + scaleBarPixels, cornerY + tickSize);
+    ctx.stroke();
+
+    // Labels
+    const label = scaleBarUm >= 1000 ? `${scaleBarUm / 1000} mm` : `${scaleBarUm} μm`;
+    ctx.font = '11px "Inter", sans-serif';
+    ctx.fillStyle = "rgba(15, 23, 42, 0.9)";
+
+    ctx.textAlign = "center";
+    ctx.textBaseline = "top";
+    ctx.fillText(label, cornerX + scaleBarPixels / 2, cornerY + 5);
+
+    ctx.save();
+    ctx.translate(cornerX - 6, cornerY - scaleBarPixels / 2);
+    ctx.rotate(-Math.PI / 2);
+    ctx.textAlign = "center";
+    ctx.textBaseline = "bottom";
+    ctx.fillText(label, 0, 0);
+    ctx.restore();
+  }
 }
 
 /**
  * Generate SVG string for probe visualization.
- * Transparent background, no scale bar, no contact IDs.
+ * Transparent background, no contact IDs. Scale bar included if enabled.
  */
 function generateProbeSvgString(
   probeData: ProbeInterfaceFile,
   viewState: ExportViewState,
-  canvasSize: CanvasSize
+  canvasSize: CanvasSize,
+  showScaleBar: boolean
 ): string {
   const geometry = computeGeometrySummary(probeData);
   const probe = probeData.probes?.[0];
@@ -254,8 +319,12 @@ function generateProbeSvgString(
     return `<svg xmlns="http://www.w3.org/2000/svg" width="${canvasSize.width}" height="${canvasSize.height}"></svg>`;
   }
 
-  const { zoom, panX, panY } = viewState;
+  const { zoom, viewCenterX, viewCenterY } = viewState;
   const { width: widthPx, height: heightPx } = canvasSize;
+
+  // Calculate effective view center (use geometry center if null)
+  const effectiveViewCenterX = viewCenterX ?? geometry.centerX;
+  const effectiveViewCenterY = viewCenterY ?? geometry.centerY;
 
   const padding = 40;
   const availableWidth = Math.max(10, widthPx - padding * 2);
@@ -265,6 +334,10 @@ function generateProbeSvgString(
     availableHeight / geometry.height
   );
   const scale = baseScale * zoom;
+
+  // Calculate pixel pan from view center
+  const panX = (geometry.centerX - effectiveViewCenterX) * scale;
+  const panY = (effectiveViewCenterY - geometry.centerY) * scale;
 
   const offsetX = widthPx / 2 + panX;
   const offsetY = heightPx / 2 + panY;
@@ -346,6 +419,45 @@ function generateProbeSvgString(
     const params = contactShapeParams[index] ?? {};
     elements.push(generateContactSvg(x, y, shape, params, false));
   });
+
+  // Scale bar (L-shaped, bottom-left corner)
+  if (showScaleBar) {
+    const niceNumbers = [1, 2, 5, 10, 25, 50, 100, 250, 500, 1000, 2500, 5000];
+    const targetPixels = 80;
+    const targetUm = targetPixels / scale;
+    const scaleBarUm = niceNumbers.reduce((prev, curr) =>
+      Math.abs(curr - targetUm) < Math.abs(prev - targetUm) ? curr : prev
+    );
+    const scaleBarPixels = scaleBarUm * scale;
+
+    const margin = 20;
+    const cornerX = margin;
+    const cornerY = heightPx - margin;
+    const tickSize = 4;
+
+    const label = scaleBarUm >= 1000 ? `${scaleBarUm / 1000} mm` : `${scaleBarUm} μm`;
+    const strokeStyle = "rgba(15, 23, 42, 0.9)";
+
+    // L shape path
+    elements.push(
+      `<path d="M${cornerX},${cornerY} L${cornerX},${cornerY - scaleBarPixels} M${cornerX},${cornerY} L${cornerX + scaleBarPixels},${cornerY}" stroke="${strokeStyle}" stroke-width="2" stroke-linecap="square" fill="none"/>`
+    );
+
+    // End ticks
+    elements.push(
+      `<path d="M${cornerX - tickSize},${cornerY - scaleBarPixels} L${cornerX + tickSize},${cornerY - scaleBarPixels} M${cornerX + scaleBarPixels},${cornerY - tickSize} L${cornerX + scaleBarPixels},${cornerY + tickSize}" stroke="${strokeStyle}" stroke-width="2" fill="none"/>`
+    );
+
+    // X label (below horizontal arm)
+    elements.push(
+      `<text x="${cornerX + scaleBarPixels / 2}" y="${cornerY + 16}" text-anchor="middle" font-family="Inter, sans-serif" font-size="11" fill="${strokeStyle}">${label}</text>`
+    );
+
+    // Y label (rotated, to the left of vertical arm)
+    elements.push(
+      `<text x="${cornerX - 6}" y="${cornerY - scaleBarPixels / 2}" text-anchor="middle" font-family="Inter, sans-serif" font-size="11" fill="${strokeStyle}" transform="rotate(-90, ${cornerX - 6}, ${cornerY - scaleBarPixels / 2})">${label}</text>`
+    );
+  }
 
   return `<svg xmlns="http://www.w3.org/2000/svg" width="${widthPx}" height="${heightPx}" viewBox="0 0 ${widthPx} ${heightPx}">
 ${elements.join("\n")}

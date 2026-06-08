@@ -4,12 +4,12 @@ import type { ProbeInterfaceFile } from "../types/probe";
 interface ProbeOverviewProps {
   probeData: ProbeInterfaceFile;
   zoom: number;
-  panX: number;
-  panY: number;
+  viewCenterX: number | null;  // probe coordinates (µm), null = geometry center
+  viewCenterY: number | null;
   /** Main canvas dimensions */
   mainWidth: number;
   mainHeight: number;
-  onPan?: (x: number, y: number) => void;
+  onViewCenterChange?: (x: number | null, y: number | null) => void;
 }
 
 interface GeometrySummary {
@@ -54,15 +54,19 @@ function computeGeometrySummary(probeData: ProbeInterfaceFile): GeometrySummary 
 export function ProbeOverview({
   probeData,
   zoom,
-  panX,
-  panY,
+  viewCenterX,
+  viewCenterY,
   mainWidth,
   mainHeight,
-  onPan,
+  onViewCenterChange,
 }: ProbeOverviewProps) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const geometry = useMemo(() => computeGeometrySummary(probeData), [probeData]);
   const probe = useMemo(() => probeData.probes?.[0], [probeData]);
+
+  // Calculate effective view center (use geometry center if null)
+  const effectiveViewCenterX = viewCenterX ?? geometry?.centerX ?? 0;
+  const effectiveViewCenterY = viewCenterY ?? geometry?.centerY ?? 0;
 
   // Fixed minimap size
   const MINIMAP_WIDTH = 120;
@@ -139,17 +143,11 @@ export function ProbeOverview({
     const visibleWidthUm = mainWidth / mainScale;
     const visibleHeightUm = mainHeight / mainScale;
 
-    // Center of visible area in probe coordinates
-    // In main canvas: normX = (x - centerX) * scale + width/2 + panX
-    // Solving for center of viewport: when normX = width/2, x = centerX - panX/scale
-    const viewCenterX = geometry.centerX - panX / mainScale;
-    const viewCenterY = geometry.centerY + panY / mainScale; // Y is inverted
-
-    // Convert to minimap coordinates
+    // Convert to minimap coordinates using the effective view center
     const viewRectWidth = visibleWidthUm * minimapScale;
     const viewRectHeight = visibleHeightUm * minimapScale;
-    const viewRectX = (viewCenterX - geometry.centerX) * minimapScale + offsetX - viewRectWidth / 2;
-    const viewRectY = -(viewCenterY - geometry.centerY) * minimapScale + offsetY - viewRectHeight / 2;
+    const viewRectX = (effectiveViewCenterX - geometry.centerX) * minimapScale + offsetX - viewRectWidth / 2;
+    const viewRectY = -(effectiveViewCenterY - geometry.centerY) * minimapScale + offsetY - viewRectHeight / 2;
 
     // Draw viewport rectangle
     ctx.strokeStyle = "rgba(59, 130, 246, 0.9)"; // Blue
@@ -201,11 +199,11 @@ export function ProbeOverview({
     ctx.lineWidth = 1;
     ctx.strokeRect(0.5, 0.5, MINIMAP_WIDTH - 1, MINIMAP_HEIGHT - 1);
 
-  }, [geometry, probe, zoom, panX, panY, mainWidth, mainHeight]);
+  }, [geometry, probe, zoom, effectiveViewCenterX, effectiveViewCenterY, mainWidth, mainHeight]);
 
   // Handle click to pan
   const handleClick = (event: React.MouseEvent<HTMLCanvasElement>) => {
-    if (!geometry || !onPan || mainWidth === 0 || mainHeight === 0) return;
+    if (!geometry || !onViewCenterChange || mainWidth === 0 || mainHeight === 0) return;
 
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -214,30 +212,22 @@ export function ProbeOverview({
     const clickX = event.clientX - rect.left;
     const clickY = event.clientY - rect.top;
 
-    // Convert click to minimap coordinates
+    // Account for title offset
+    const titleHeight = 16;
     const padding = 8;
     const availW = MINIMAP_WIDTH - padding * 2;
-    const availH = MINIMAP_HEIGHT - padding * 2;
+    const availH = MINIMAP_HEIGHT - padding * 2 - titleHeight;
     const minimapScale = Math.min(availW / geometry.width, availH / geometry.height);
 
     const offsetX = MINIMAP_WIDTH / 2;
-    const offsetY = MINIMAP_HEIGHT / 2;
+    const offsetY = (MINIMAP_HEIGHT + titleHeight) / 2;
 
     // Convert click position to probe coordinates
     const probeX = (clickX - offsetX) / minimapScale + geometry.centerX;
     const probeY = geometry.centerY - (clickY - offsetY) / minimapScale; // Y inverted
 
-    // Calculate pan to center on this point
-    const mainPadding = 40;
-    const mainAvailW = Math.max(10, mainWidth - mainPadding * 2);
-    const mainAvailH = Math.max(10, mainHeight - mainPadding * 2);
-    const mainBaseScale = Math.min(mainAvailW / geometry.width, mainAvailH / geometry.height);
-    const mainScale = mainBaseScale * zoom;
-
-    const newPanX = -(probeX - geometry.centerX) * mainScale;
-    const newPanY = (probeY - geometry.centerY) * mainScale;
-
-    onPan(newPanX, newPanY);
+    // Set view center to the clicked point
+    onViewCenterChange(probeX, probeY);
   };
 
   if (!geometry || !probe) return null;

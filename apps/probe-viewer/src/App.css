@@ -1,6 +1,7 @@
 .app-shell {
   display: flex;
-  min-height: 100vh;
+  height: 100%;
+  overflow: hidden;
   background: linear-gradient(180deg, #f8fafc 0%, #e2e8f0 100%);
 }
 
@@ -13,6 +14,8 @@
 
 .app-main {
   flex: 1;
+  min-width: 0; /* allow the main area to shrink to the frame instead of overflowing */
+  min-height: 0;
   padding: 1.5rem;
   display: flex;
   align-items: stretch;
@@ -82,6 +85,7 @@
 
 .sidebar-list {
   flex: 1;
+  min-height: 0; /* let the list shrink to its slot so overflow-y: auto can scroll it */
   overflow-y: auto;
   display: flex;
   flex-direction: column;
@@ -141,7 +145,7 @@
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
+  gap: 1rem;
   max-width: 960px;
   width: 100%;
   background: rgba(255, 255, 255, 0.95);
@@ -160,6 +164,29 @@
 .viewer-title {
   margin: 0;
   font-size: 1.75rem;
+}
+
+/* "{ } JSON" link inline in the subtitle metadata line. It uses the blue link
+   color and a persistent underline (on the word, not the icon) so it clearly
+   reads as a clickable link rather than just emphasized text. */
+.viewer-json-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  vertical-align: middle; /* align the icon + text with the surrounding subtitle text */
+  font-weight: 600;
+  color: #2563eb;
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.viewer-json-link-text {
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.viewer-json-link:hover {
+  color: #1d4ed8;
 }
 
 .viewer-subtitle {
@@ -182,6 +209,10 @@
 }
 
 .viewer-controls button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
   font: inherit;
   padding: 0.45rem 0.9rem;
   border-radius: 0.75rem;
@@ -248,6 +279,9 @@
 }
 
 .viewer-download {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
   font-size: 0.9rem;
   padding: 0.5rem 0.75rem;
   border-radius: 0.75rem;
@@ -304,107 +338,6 @@
 .viewer-issue-link a:hover {
   color: #2563eb;
   text-decoration: underline;
-}
-
-.viewer-json-panel {
-  background: rgba(248, 250, 252, 0.95);
-  border-radius: 1rem;
-  padding: 1.25rem;
-  border: 1px solid rgba(148, 163, 184, 0.3);
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-}
-
-.viewer-json-header {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 0.75rem;
-}
-
-.viewer-json-header h3 {
-  margin: 0;
-  font-size: 1rem;
-}
-
-.viewer-json-meta {
-  font-size: 0.85rem;
-  color: #475569;
-}
-
-.viewer-json {
-  margin: 0;
-  padding: 1rem;
-  background: #0f172a;
-  color: #e2e8f0;
-  border-radius: 0.75rem;
-  font-size: 0.85rem;
-  overflow: auto;
-  max-height: 360px;
-  font-family: "Fira Code", "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
-}
-
-.json-tree-node > summary {
-  cursor: pointer;
-  list-style: none;
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 0.5rem;
-  color: #cbd5f5;
-}
-
-.json-tree-node > summary:hover {
-  color: #94a3ff;
-}
-
-.json-tree-node > summary::marker,
-.json-tree-node > summary::-webkit-details-marker {
-  display: none;
-}
-
-.json-tree-node > summary::before {
-  content: "▸";
-  display: inline-block;
-  margin-right: 0.35rem;
-  transition: transform 0.15s ease;
-}
-
-.json-tree-node[open] > summary::before {
-  transform: rotate(90deg);
-}
-
-.json-tree-key {
-  font-weight: 600;
-  color: #f8fafc;
-}
-
-.json-tree-meta {
-  font-size: 0.75rem;
-  color: rgba(226, 232, 240, 0.7);
-}
-
-.json-tree-children {
-  margin-left: 1rem;
-  border-left: 1px solid rgba(148, 163, 184, 0.3);
-  padding-left: 0.75rem;
-  margin-top: 0.4rem;
-  display: flex;
-  flex-direction: column;
-  gap: 0.35rem;
-}
-
-.json-tree-item {
-  margin-left: 1.35rem;
-  color: #e2e8f0;
-  display: flex;
-  align-items: baseline;
-  gap: 0.4rem;
-}
-
-.json-tree-value--primitive {
-  color: #facc15;
 }
 
 .viewer-placeholder {

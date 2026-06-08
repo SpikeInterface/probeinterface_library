@@ -13,8 +13,8 @@ interface ProbeLoadState {
 
 interface ViewState {
   zoom: number;
-  panX: number;
-  panY: number;
+  viewCenterX: number | null;  // null = centered on geometry center
+  viewCenterY: number | null;  // in probe coordinates (micrometers)
   showContactIds: boolean;
   showScaleBar: boolean;
   showOverview: boolean;
@@ -37,7 +37,7 @@ interface AppState {
   selectProbe: (probeId?: string) => void;
   ensureProbeLoaded: (probeId: string) => Promise<ProbeInterfaceFile | undefined>;
   setZoom: (zoom: number) => void;
-  setPan: (panX: number, panY: number) => void;
+  setViewCenter: (x: number | null, y: number | null) => void;
   resetView: () => void;
   toggleContactIds: (value?: boolean) => void;
   toggleScaleBar: (value?: boolean) => void;
@@ -49,8 +49,8 @@ export const VIEW_ZOOM_MAX = 100;  // High max for long probes like Neuropixels
 
 const INITIAL_VIEW_STATE: ViewState = {
   zoom: 1,
-  panX: 0,
-  panY: 0,
+  viewCenterX: null,
+  viewCenterY: null,
   showContactIds: false,
   showScaleBar: true,
   showOverview: true,
@@ -175,12 +175,12 @@ export const useAppStore = create<AppState>((set, get) => ({
       },
     })),
 
-  setPan: (panX, panY) =>
+  setViewCenter: (x, y) =>
     set((state) => ({
       view: {
         ...state.view,
-        panX,
-        panY,
+        viewCenterX: x,
+        viewCenterY: y,
       },
     })),
 

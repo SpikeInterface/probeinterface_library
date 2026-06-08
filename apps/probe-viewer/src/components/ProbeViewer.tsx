@@ -1,11 +1,51 @@
-import { useCallback, useEffect, useMemo, useRef } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { useResizeObserver } from "../hooks/useResizeObserver";
 import { useAppStore, VIEW_ZOOM_MAX, VIEW_ZOOM_MIN } from "../state/useAppStore";
 import { exportProbeAsPng, exportProbeAsSvg } from "../utils/exportUtils";
-import { JsonTree } from "./JsonTree";
 import { ProbeCanvas } from "./ProbeCanvas";
 import { ProbeOverview } from "./ProbeOverview";
+
+const ZoomInIcon = (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="11" cy="11" r="8"/>
+    <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+    <line x1="11" y1="8" x2="11" y2="14"/>
+    <line x1="8" y1="11" x2="14" y2="11"/>
+  </svg>
+);
+
+const ZoomOutIcon = (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="11" cy="11" r="8"/>
+    <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+    <line x1="8" y1="11" x2="14" y2="11"/>
+  </svg>
+);
+
+const ShareIcon = (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="18" cy="5" r="3"/>
+    <circle cx="6" cy="12" r="3"/>
+    <circle cx="18" cy="19" r="3"/>
+    <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/>
+    <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
+  </svg>
+);
+
+const CheckIcon = (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <polyline points="20 6 9 17 4 12"/>
+  </svg>
+);
+
+// Curly-braces glyph, the de-facto standard symbol for JSON/code.
+const JsonIcon = (
+  <svg aria-hidden="true" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M8 3H7a2 2 0 0 0-2 2v5a2 2 0 0 1-2 2 2 2 0 0 1 2 2v5c0 1.1.9 2 2 2h1"/>
+    <path d="M16 3h1a2 2 0 0 1 2 2v5a2 2 0 0 0 2 2 2 2 0 0 0-2 2v5a2 2 0 0 1-2 2h-1"/>
+  </svg>
+);
 
 export function ProbeViewer() {
   const manifest = useAppStore((state) => state.manifest);
@@ -17,7 +57,7 @@ export function ProbeViewer() {
   const probeStatus = useAppStore((state) => state.probeStatus);
   const view = useAppStore((state) => state.view);
   const setZoom = useAppStore((state) => state.setZoom);
-  const setPan = useAppStore((state) => state.setPan);
+  const setViewCenter = useAppStore((state) => state.setViewCenter);
   const resetView = useAppStore((state) => state.resetView);
   const toggleContactIds = useAppStore((state) => state.toggleContactIds);
   const toggleScaleBar = useAppStore((state) => state.toggleScaleBar);
@@ -51,29 +91,46 @@ export function ProbeViewer() {
     if (probeData && entry) {
       exportProbeAsPng(
         probeData,
-        { zoom: view.zoom, panX: view.panX, panY: view.panY },
+        { zoom: view.zoom, viewCenterX: view.viewCenterX, viewCenterY: view.viewCenterY },
         { width: canvasSize.width, height: canvasSize.height },
-        `${entry.id}.png`
+        `${entry.id}.png`,
+        view.showScaleBar
       );
     }
-  }, [probeData, entry, view.zoom, view.panX, view.panY, canvasSize.width, canvasSize.height]);
+  }, [probeData, entry, view.zoom, view.viewCenterX, view.viewCenterY, canvasSize.width, canvasSize.height, view.showScaleBar]);
 
   const handleExportSvg = useCallback(() => {
     if (probeData && entry) {
       exportProbeAsSvg(
         probeData,
-        { zoom: view.zoom, panX: view.panX, panY: view.panY },
+        { zoom: view.zoom, viewCenterX: view.viewCenterX, viewCenterY: view.viewCenterY },
         { width: canvasSize.width, height: canvasSize.height },
-        `${entry.id}.svg`
+        `${entry.id}.svg`,
+        view.showScaleBar
       );
     }
-  }, [probeData, entry, view.zoom, view.panX, view.panY, canvasSize.width, canvasSize.height]);
+  }, [probeData, entry, view.zoom, view.viewCenterX, view.viewCenterY, canvasSize.width, canvasSize.height, view.showScaleBar]);
+
+  const [shareCopied, setShareCopied] = useState(false);
+  const handleShareView = useCallback(() => {
+    navigator.clipboard.writeText(window.location.href).then(() => {
+      setShareCopied(true);
+      setTimeout(() => setShareCopied(false), 2000);
+    });
+  }, []);
 
   const lastResetProbeId = useRef<string | undefined>(undefined);
 
   useEffect(() => {
     if (selectedProbeId && lastResetProbeId.current !== selectedProbeId) {
-      resetView();
+      // Get current view state directly from store (not stale closure value)
+      // This is critical because App.tsx's URL effect may have updated the store
+      // after this component rendered but before this effect runs
+      const currentView = useAppStore.getState().view;
+      const hasUrlViewState = currentView.zoom !== 1 || currentView.viewCenterX !== null || currentView.viewCenterY !== null;
+      if (!hasUrlViewState) {
+        resetView();
+      }
       lastResetProbeId.current = selectedProbeId;
     }
     if (!selectedProbeId) {
@@ -90,6 +147,14 @@ export function ProbeViewer() {
     if (lastSmartZoomProbeId.current === selectedProbeId) return;
     // Wait for canvas size to be available
     if (canvasSize.width === 0 || canvasSize.height === 0) return;
+
+    // Get current view state directly from store (not stale closure value)
+    const currentView = useAppStore.getState().view;
+    const hasUrlViewState = currentView.zoom !== 1 || currentView.viewCenterX !== null || currentView.viewCenterY !== null;
+    if (hasUrlViewState) {
+      lastSmartZoomProbeId.current = selectedProbeId;
+      return;
+    }
 
     const probe = probeData.probes?.[0];
     if (!probe) return;
@@ -112,6 +177,7 @@ export function ProbeViewer() {
 
     const width = Math.max(10, maxX - minX);
     const height = Math.max(10, maxY - minY);
+    const centerX = minX + width / 2;
     const aspectRatio = height / width;
 
     const TALL_THRESHOLD = 10;
@@ -122,31 +188,25 @@ export function ProbeViewer() {
       const initialZoom = aspectRatio * TARGET_WIDTH_FRACTION;
       setZoom(initialZoom);
 
-      // Calculate pan to show the bottom of the probe
-      // Canvas projection: screenY = -(probeY - centerY) * scale + height/2 + panY
-      // minY (probe base) maps to screen bottom, maxY (probe tip) maps to screen top
-      // To show the base, we need to shift the view down (negative panY)
+      // Set view center to show the bottom (base) of the probe
+      // We want minY (probe base) to appear near bottom of viewport
+      // Calculate the Y coordinate that should be at screen center
       const mainPadding = 40;
       const mainAvailW = Math.max(10, canvasSize.width - mainPadding * 2);
       const mainAvailH = Math.max(10, canvasSize.height - mainPadding * 2);
       const mainBaseScale = Math.min(mainAvailW / width, mainAvailH / height);
       const mainScale = mainBaseScale * initialZoom;
 
-      // At panY=0, probe center is at screen center
-      // screenY of minY = -(minY - centerY) * scale + height/2 = (centerY - minY) * scale + height/2
-      // We want minY to appear near bottom of viewport (with margin)
-      // Target screenY for minY = height - margin
-      // So: (centerY - minY) * scale + height/2 + panY = height - margin
-      // panY = height - margin - height/2 - (centerY - minY) * scale
-      // panY = height/2 - margin - (height/2) * scale  (since centerY - minY = height/2)
-      const probeHalfHeightScreen = (height / 2) * mainScale;
-      const initialPanY = canvasSize.height / 2 - mainPadding - probeHalfHeightScreen;
+      // How much of probe height fits in the viewport?
+      const viewportHeightInProbeUnits = (canvasSize.height - mainPadding * 2) / mainScale;
+      // Center the view so minY is near the bottom edge
+      const initialViewCenterY = minY + viewportHeightInProbeUnits / 2;
 
-      setPan(0, initialPanY);
+      setViewCenter(centerX, initialViewCenterY);
     }
 
     lastSmartZoomProbeId.current = selectedProbeId;
-  }, [probeData, selectedProbeId, setZoom, setPan, canvasSize.width, canvasSize.height]);
+  }, [probeData, selectedProbeId, setZoom, setViewCenter, canvasSize.width, canvasSize.height]);
 
   if (manifestStatus === "loading") {
     return (
@@ -179,24 +239,36 @@ export function ProbeViewer() {
           <h2 className="viewer-title">{entry.displayName}</h2>
           <p className="viewer-subtitle">
             {entry.manufacturer} · {entry.contactCount} contacts ·{" "}
-            {entry.shankCount} shanks
+            {entry.shankCount} shanks ·{" "}
+            <a
+              className="viewer-json-link"
+              href={`https://github.com/SpikeInterface/probeinterface_library/blob/main/${entry.manufacturer}/${entry.model}/${entry.model}.json`}
+              target="_blank"
+              rel="noreferrer"
+              title="View this probe's JSON on GitHub"
+            >
+              {JsonIcon}
+              <span className="viewer-json-link-text">JSON</span>
+            </a>
           </p>
         </div>
         <div className="viewer-header-actions">
-          <button type="button" className="viewer-download" onClick={handleExportPng}>
+          <button
+            type="button"
+            className="viewer-download"
+            onClick={handleExportPng}
+            title="Export current view as PNG (white background). If scale bar is enabled, it will be included."
+          >
             Export PNG
           </button>
-          <button type="button" className="viewer-download" onClick={handleExportSvg}>
+          <button
+            type="button"
+            className="viewer-download"
+            onClick={handleExportSvg}
+            title="Export current view as SVG (transparent background). If scale bar is enabled, it will be included."
+          >
             Export SVG
           </button>
-          <a
-            className="viewer-download"
-            href={entry.jsonUrl}
-            target="_blank"
-            rel="noreferrer"
-          >
-            Download JSON
-          </a>
         </div>
       </header>
 
@@ -205,17 +277,37 @@ export function ProbeViewer() {
           <button
             type="button"
             onClick={() => setZoom(Math.min(view.zoom * 1.5, VIEW_ZOOM_MAX))}
+            title="Zoom in"
           >
-            Zoom in
+            {ZoomInIcon}
           </button>
           <button
             type="button"
             onClick={() => setZoom(Math.max(view.zoom / 1.5, VIEW_ZOOM_MIN))}
+            title="Zoom out"
           >
-            Zoom out
+            {ZoomOutIcon}
           </button>
-          <button type="button" onClick={() => resetView()}>
-            Show full probe
+          <button type="button" onClick={() => resetView()} title="Show full probe">
+            Full Probe View
+          </button>
+          <button
+            type="button"
+            onClick={handleShareView}
+            title="Copy a link to the current view"
+            aria-label="Copy a link to the current view"
+          >
+            {shareCopied ? (
+              <>
+                {CheckIcon}
+                Copied view to clipboard!
+              </>
+            ) : (
+              <>
+                {ShareIcon}
+                Share View
+              </>
+            )}
           </button>
         </div>
         <div className="viewer-controls-group">
@@ -258,22 +350,22 @@ export function ProbeViewer() {
               entry={entry}
               probeData={probeData}
               zoom={view.zoom}
-              panX={view.panX}
-              panY={view.panY}
+              viewCenterX={view.viewCenterX}
+              viewCenterY={view.viewCenterY}
               showContactIds={view.showContactIds}
               showScaleBar={view.showScaleBar}
-              onPan={(nextX, nextY) => setPan(nextX, nextY)}
+              onViewCenterChange={(x, y) => setViewCenter(x, y)}
               onZoom={(value) => setZoom(value)}
             />
             {view.showOverview && (
               <ProbeOverview
                 probeData={probeData}
                 zoom={view.zoom}
-                panX={view.panX}
-                panY={view.panY}
+                viewCenterX={view.viewCenterX}
+                viewCenterY={view.viewCenterY}
                 mainWidth={canvasSize.width}
                 mainHeight={canvasSize.height}
-                onPan={(nextX, nextY) => setPan(nextX, nextY)}
+                onViewCenterChange={(x, y) => setViewCenter(x, y)}
               />
             )}
           </>
@@ -304,29 +396,6 @@ export function ProbeViewer() {
         </a>
       </div>
 
-      <section className="viewer-json-panel">
-        <div className="viewer-json-header">
-          <h3>Probe JSON</h3>
-          {status === "success" && probeData && (
-            <span className="viewer-json-meta">
-              {probeData.specification} · v{probeData.version}
-            </span>
-          )}
-        </div>
-        {status === "loading" && <p>Fetching probe data…</p>}
-        {status === "error" && (
-          <p className="viewer-placeholder--error">{statusMessage}</p>
-        )}
-        {status === "success" && probeData && (
-          <div className="viewer-json">
-            <JsonTree
-              data={probeData}
-              name={entry.displayName}
-              defaultExpanded={false}
-            />
-          </div>
-        )}
-      </section>
     </div>
   );
 }

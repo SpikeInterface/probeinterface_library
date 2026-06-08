@@ -2,6 +2,14 @@ import { useEffect, useMemo } from "react";
 
 import { useAppStore } from "../state/useAppStore";
 
+const MANUFACTURER_DISPLAY_NAMES: Record<string, string> = {
+  cambridgeneurotech: "Cambridge NeuroTech",
+  imec: "IMEC (Neuropixels)",
+  neuronexus: "NeuroNexus",
+  plexon: "Plexon",
+  "sinaps-research-platform": "SINAPS",
+};
+
 export function Sidebar() {
   const manifest = useAppStore((state) => state.manifest);
   const manifestStatus = useAppStore((state) => state.manifestStatus);
@@ -72,7 +80,7 @@ export function Sidebar() {
         >
           {manufacturers.map((manufacturer) => (
             <option key={manufacturer} value={manufacturer}>
-              {manufacturer}
+              {MANUFACTURER_DISPLAY_NAMES[manufacturer] ?? manufacturer}
             </option>
           ))}
         </select>
