@@ -83,6 +83,9 @@ export function ProbeViewer() {
 
   const probeData = selectedProbeId ? probeCache[selectedProbeId] : undefined;
 
+  // Only offer the "Show contact IDs" toggle when the probe actually carries them.
+  const hasContactIds = !!probeData?.probes?.[0]?.contact_ids?.length;
+
   // Track canvas container size for minimap
   const { ref: canvasContainerRef, size: canvasSize } = useResizeObserver<HTMLDivElement>();
 
@@ -311,14 +314,16 @@ export function ProbeViewer() {
           </button>
         </div>
         <div className="viewer-controls-group">
-          <label className="viewer-toggle">
-            <input
-              type="checkbox"
-              checked={view.showContactIds}
-              onChange={(event) => toggleContactIds(event.target.checked)}
-            />
-            Show contact IDs
-          </label>
+          {hasContactIds && (
+            <label className="viewer-toggle">
+              <input
+                type="checkbox"
+                checked={view.showContactIds}
+                onChange={(event) => toggleContactIds(event.target.checked)}
+              />
+              Show contact IDs
+            </label>
+          )}
           <label className="viewer-toggle">
             <input
               type="checkbox"

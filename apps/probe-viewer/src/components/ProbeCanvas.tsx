@@ -261,14 +261,16 @@ export const ProbeCanvas = forwardRef<HTMLCanvasElement, ProbeCanvasProps>(
       ctx.stroke();
     });
 
-    if (showContactIds) {
+    if (showContactIds && probe.contact_ids) {
+      const contactIds = probe.contact_ids;
       ctx.font = `${Math.max(10, Math.min(14, 10 * (scale / 100)))}px "Inter", sans-serif`;
       ctx.textAlign = "center";
       ctx.textBaseline = "top";
       ctx.fillStyle = "rgba(15, 23, 42, 0.95)";
       contactPositions.forEach((position, index) => {
         const [x, y] = projectPoint(position);
-        ctx.fillText(String(index), x, y + 4);
+        // Show the probe's actual contact id, not the array index.
+        ctx.fillText(String(contactIds[index] ?? index), x, y + 4);
       });
     }
 

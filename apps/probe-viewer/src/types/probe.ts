@@ -35,6 +35,7 @@ export interface ProbeInterfaceProbe {
   contact_positions: number[][];
   contact_shapes?: string[];  // "circle" | "square" | "rect"
   contact_shape_params?: ContactShapeParams[];
+  contact_ids?: (string | number)[];
   shank_ids?: number[];
   probe_planar_contour?: number[][];
 }
