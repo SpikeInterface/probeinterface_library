@@ -305,6 +305,8 @@ function renderProbeToContext(
 /**
  * Generate SVG string for probe visualization.
  * Transparent background, no contact IDs. Scale bar included if enabled.
+ * Contacts outside the current frame are omitted, so the export matches what is
+ * on screen and stays small even when zoomed into a long probe.
  */
 function generateProbeSvgString(
   probeData: ProbeInterfaceFile,
@@ -402,9 +404,23 @@ function generateProbeSvgString(
     }
   };
 
+  // Only emit contacts whose drawn body reaches the frame, so the export matches
+  // what is on screen instead of carrying hundreds of off-screen contacts.
+  const maxContactSizeUm = contactShapeParams.reduce((max, p) => {
+    const size = Math.max((p.radius ?? 0) * 2, p.width ?? 0, p.height ?? 0);
+    return Math.max(max, size);
+  }, 10);
+  const frameMargin = maxContactSizeUm * scale + shadowOffset;
+  const isContactInFrame = (x: number, y: number) =>
+    x >= -frameMargin &&
+    x <= widthPx + frameMargin &&
+    y >= -frameMargin &&
+    y <= heightPx + frameMargin;
+
   // First pass: shadows
   contactPositions.forEach((position, index) => {
     const [x, y] = projectPoint(position);
+    if (!isContactInFrame(x, y)) return;
     const shape = contactShapes[index] ?? "";
     const params = contactShapeParams[index] ?? {};
     elements.push(
@@ -415,6 +431,7 @@ function generateProbeSvgString(
   // Second pass: gold contacts
   contactPositions.forEach((position, index) => {
     const [x, y] = projectPoint(position);
+    if (!isContactInFrame(x, y)) return;
     const shape = contactShapes[index] ?? "";
     const params = contactShapeParams[index] ?? {};
     elements.push(generateContactSvg(x, y, shape, params, false));
