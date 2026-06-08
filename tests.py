@@ -10,7 +10,14 @@ schema_url = "https://raw.githubusercontent.com/SpikeInterface/probeinterface/ma
 response = requests.get(schema_url)
 response.raise_for_status()
 
-files = glob.glob("*/*/*.json")
+# Probe files live at <manufacturer>/<model>/<model>.json. Exclude directories
+# that are not probe data (the probe-viewer app ships its own JSON config files).
+NON_PROBE_DIRS = {"apps", "scripts", "node_modules", ".github"}
+files = [
+    file
+    for file in glob.glob("*/*/*.json")
+    if file.split("/")[0] not in NON_PROBE_DIRS
+]
 
 
 @pytest.mark.parametrize("file", files)

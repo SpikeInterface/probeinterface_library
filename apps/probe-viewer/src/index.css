@@ -1,0 +1,35 @@
+:root {
+  font-family: "Inter", "Segoe UI", Helvetica, Arial, sans-serif;
+  line-height: 1.4;
+  font-weight: 400;
+  color: #0f172a;
+  background-color: #f1f5f9;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  height: 100vh; /* fallback for browsers without dvh */
+  height: 100dvh; /* tracks the visible area as mobile browser chrome changes */
+  overflow: hidden; /* the document itself never scrolls; panels scroll internally */
+  background-color: inherit;
+  color: inherit;
+}
+
+a {
+  color: inherit;
+}
+
+#root {
+  height: 100%;
+}
