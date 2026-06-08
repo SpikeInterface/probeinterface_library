@@ -4,6 +4,7 @@ import { useAppStore } from "../state/useAppStore";
 
 const MANUFACTURER_DISPLAY_NAMES: Record<string, string> = {
   cambridgeneurotech: "Cambridge NeuroTech",
+  diagnosticbiochips: "Diagnostic Biochips",
   imec: "IMEC (Neuropixels)",
   neuronexus: "NeuroNexus",
   plexon: "Plexon",
