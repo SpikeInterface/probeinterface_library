@@ -1,0 +1,15 @@
+# Probe viewer generated files (created at build time)
+apps/probe-viewer/public/data/
+apps/probe-viewer/public/probes-manifest.json
+apps/probe-viewer/node_modules/
+apps/probe-viewer/dist/
+
+# Build cache
+.cache/
+
+# Python
+__pycache__/
+*.py[cod]
+
+# OS / editor
+.DS_Store
