@@ -69,6 +69,11 @@ export function Sidebar() {
     [isNeuropixels, filteredEntries],
   );
 
+  // While searching, force every group open so matches aren't hidden inside a
+  // collapsed group (filteredEntries already contains only the hits). When the
+  // search clears, the user's manual expand/collapse state takes over again.
+  const isSearching = searchQuery.trim().length > 0;
+
   // Both levels start collapsed (empty expanded sets). A platform shows its
   // families only when expanded; a family shows its probes only when expanded.
   const [expandedPlatforms, setExpandedPlatforms] = useState<Set<string>>(
@@ -174,7 +179,7 @@ export function Sidebar() {
         {manifestStatus === "success" &&
           isNeuropixels &&
           groups.map((group) => {
-            const platformOpen = expandedPlatforms.has(group.platform);
+            const platformOpen = isSearching || expandedPlatforms.has(group.platform);
             return (
               <div className="sidebar-group" key={group.platform}>
                 <button
@@ -192,7 +197,7 @@ export function Sidebar() {
                 {platformOpen &&
                   group.families.map((fam) => {
                     const familyKey = `${group.platform}||${fam.family}`;
-                    const familyOpen = expandedFamilies.has(familyKey);
+                    const familyOpen = isSearching || expandedFamilies.has(familyKey);
                     return (
                       <div className="sidebar-subgroup" key={fam.family}>
                         <button
