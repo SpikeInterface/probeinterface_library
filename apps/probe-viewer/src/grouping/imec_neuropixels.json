@@ -25,6 +25,7 @@
         { "label": "Legacy", "probes": ["PRB2_1_2_0640_0", "PRB2_4_2_0640_0"] }
       ] },
     { "label": "Neuropixels NXT",
+      "note": "NP3023/NP3024 describe themselves as 'Neuropixels 3.0' but I am gruping them here as the NXT generation.",
       "children": [
         { "label": "Single-shank", "probes": ["NP3010", "NP3011"] },
         { "label": "Multi-shank", "probes": ["NP3020", "NP3021", "NP3022", "NP3023", "NP3024"] },

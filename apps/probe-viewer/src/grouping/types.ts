@@ -9,17 +9,20 @@ import type { ManifestEntry } from "../types/probe";
 // need stating: the length bands set `collapsible: false` to render as static
 // dividers, and every other node omits it and stays a foldable header.
 
-export interface HierarchyNode {
+export interface DisplayCategory {
   label: string;
   // true (default) => a collapsible group header; false => a static, always-open
   // divider.
   collapsible?: boolean;
-  children?: HierarchyNode[];
+  // Free-text rationale for a non-obvious placement. Documentation only, since
+  // JSON has no comments; not rendered.
+  note?: string;
+  children?: DisplayCategory[];
   probes?: string[]; // model ids, in display order
 }
 
 export interface HierarchyConfig {
-  hierarchy: HierarchyNode[];
+  hierarchy: DisplayCategory[];
 }
 
 // One node of the resolved tree the walker returns, with manifest entries

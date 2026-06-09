@@ -1,5 +1,5 @@
 import type { ManifestEntry } from "../types/probe";
-import type { GroupNode, HierarchyConfig, HierarchyNode } from "./types";
+import type { GroupNode, HierarchyConfig, DisplayCategory } from "./types";
 
 // Label for the trailing bucket that catches any probe present in the manifest
 // but not placed anywhere in the hierarchy. It is the visible signal that a new
@@ -18,7 +18,7 @@ export function groupEntries(
   for (const entry of entries) byModel.set(entry.model, entry);
   const placed = new Set<string>();
 
-  const walk = (node: HierarchyNode): GroupNode | null => {
+  const walk = (node: DisplayCategory): GroupNode | null => {
     const collapsible = node.collapsible ?? true;
 
     if (node.children) {
