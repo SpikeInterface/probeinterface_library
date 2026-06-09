@@ -7,7 +7,8 @@
             "si_units": "um",
             "annotations": {
                 "model_name": "DA64-1",
-                "manufacturer": "diagnosticbiochips"
+                "manufacturer": "diagnosticbiochips",
+                "shank_material": "stainless steel"
             },
             "contact_annotations": {},
             "contact_positions": [
@@ -1173,7 +1174,7 @@
             "probe_planar_contour": [
                 [
                     -100.0,
-                    6400.0
+                    90000.0
                 ],
                 [
                     -100.0,
@@ -1189,7 +1190,7 @@
                 ],
                 [
                     100.0,
-                    6400.0
+                    90000.0
                 ]
             ],
             "contact_ids": [
