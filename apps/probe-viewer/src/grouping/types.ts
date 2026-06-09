@@ -7,10 +7,9 @@ import type { ManifestEntry } from "../types/probe";
 //
 // Collapsibility is a per-node property that propagates to descendants: a node
 // uses its own `collapsible` when set, otherwise it inherits the resolved value
-// of its parent. The top-level default is `true`. So a platform marked
-// collapsible flows that down to its families, and a length band marked
-// non-collapsible flows that down to its probes, without either having to be
-// repeated on every node.
+// of its parent, and the top-level default is `true`. So only the exceptions
+// need stating: the length bands set `collapsible: false`, which flows down to
+// their probes, while everything else inherits the default and stays foldable.
 
 export interface HierarchyNode {
   label: string;

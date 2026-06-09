@@ -20,11 +20,11 @@ order) at the leaves.
 
 `collapsible` is a per-node property that **propagates to descendants**: a node
 uses its own `collapsible` when set, otherwise it inherits the resolved value of
-its parent, and the top-level default is `true`. So each platform sets
-`collapsible: true` and that flows down to its families, while each length band
-sets `collapsible: false` (a static, always-open divider) and that flows down to
-its probes. `true` is a foldable header with a caret; `false` is a static
-divider.
+its parent, and the top-level default is `true`. So only the exceptions need
+stating: the length bands set `collapsible: false` (a static, always-open
+divider) and that flows down to their probes, while everything else omits it and
+inherits the default. `true` is a foldable header with a caret; `false` is a
+static divider.
 
 The walker (`groupEntries.ts`) attaches each manifest entry to the node listing
 its model, prunes empty branches, and collects anything not placed into a

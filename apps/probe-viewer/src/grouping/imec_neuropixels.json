@@ -1,6 +1,6 @@
 {
   "hierarchy": [
-    { "label": "Neuropixels 1.0", "collapsible": true,
+    { "label": "Neuropixels 1.0",
       "children": [
         { "label": "Standard", "probes": ["NP1000", "NP1001"] },
         { "label": "Non-human-primate",
@@ -14,7 +14,7 @@
         { "label": "Optogenetics", "probes": ["NP1300"] },
         { "label": "Legacy", "probes": ["PRB_1_2_0480_2", "PRB_1_4_0480_1", "PRB_1_4_0480_1_C"] }
       ] },
-    { "label": "Neuropixels 2.0", "collapsible": true,
+    { "label": "Neuropixels 2.0",
       "children": [
         { "label": "Non-human-primate",
           "children": [
@@ -24,7 +24,7 @@
         { "label": "Multi-shank", "probes": ["NP2010", "NP2013", "NP2014", "NP2020", "NP2021"] },
         { "label": "Legacy", "probes": ["PRB2_1_2_0640_0", "PRB2_4_2_0640_0"] }
       ] },
-    { "label": "Neuropixels NXT", "collapsible": true,
+    { "label": "Neuropixels NXT",
       "children": [
         { "label": "Single-shank", "probes": ["NP3010", "NP3011"] },
         { "label": "Multi-shank", "probes": ["NP3020", "NP3021", "NP3022", "NP3023", "NP3024"] },
