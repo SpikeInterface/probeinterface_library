@@ -1,0 +1,34 @@
+{
+  "hierarchy": [
+    { "label": "Neuropixels 1.0", "collapsible": true,
+      "children": [
+        { "label": "Standard", "probes": ["NP1000", "NP1001"] },
+        { "label": "Non-human-primate",
+          "children": [
+            { "label": "short", "collapsible": false, "probes": ["NP1010", "NP1011", "NP1012", "NP1013", "NP1014", "NP1015", "NP1016", "NP1017"] },
+            { "label": "medium", "collapsible": false, "probes": ["NP1020", "NP1021", "NP1022"] },
+            { "label": "long / max", "collapsible": false, "probes": ["NP1030", "NP1031", "NP1032", "NP1033", "NP1040", "NP1041", "NP1042", "NP1050", "NP1051"] },
+            { "label": "passive", "collapsible": false, "probes": ["NP1200", "NP1210"] }
+          ] },
+        { "label": "Ultra High Density", "probes": ["NP1100", "NP1120", "NP1121", "NP1122", "NP1123"] },
+        { "label": "Optogenetics", "probes": ["NP1300"] },
+        { "label": "Legacy", "probes": ["PRB_1_2_0480_2", "PRB_1_4_0480_1", "PRB_1_4_0480_1_C"] }
+      ] },
+    { "label": "Neuropixels 2.0", "collapsible": true,
+      "children": [
+        { "label": "Non-human-primate",
+          "children": [
+            { "label": "short", "collapsible": false, "probes": ["NP2005", "NP2006"] }
+          ] },
+        { "label": "Single-shank", "probes": ["NP2000", "NP2003", "NP2004"] },
+        { "label": "Multi-shank", "probes": ["NP2010", "NP2013", "NP2014", "NP2020", "NP2021"] },
+        { "label": "Legacy", "probes": ["PRB2_1_2_0640_0", "PRB2_4_2_0640_0"] }
+      ] },
+    { "label": "Neuropixels NXT", "collapsible": true,
+      "children": [
+        { "label": "Single-shank", "probes": ["NP3010", "NP3011"] },
+        { "label": "Multi-shank", "probes": ["NP3020", "NP3021", "NP3022", "NP3023", "NP3024"] },
+        { "label": "Passive", "probes": ["NP3000"] }
+      ] }
+  ]
+}
