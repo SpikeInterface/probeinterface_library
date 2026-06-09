@@ -2,7 +2,9 @@ import { useEffect, useMemo, useState } from "react";
 
 import { useAppStore } from "../state/useAppStore";
 import type { ManifestEntry } from "../types/probe";
-import { groupNeuropixels, variantLabel } from "../utils/neuropixelsGrouping";
+import { groupEntries } from "../grouping/groupEntries";
+import { getGroupingConfig } from "../grouping";
+import type { GroupNode } from "../grouping/types";
 
 const MANUFACTURER_DISPLAY_NAMES: Record<string, string> = {
   cambridgeneurotech: "Cambridge NeuroTech",
@@ -61,12 +63,14 @@ export function Sidebar() {
     }
   }, [filteredEntries, selectedProbeId, selectProbe]);
 
-  // Neuropixels (imec) gets a hierarchy-grouped list (platform -> family);
+  // A manufacturer with a grouping config (only IMEC today) gets a hierarchy;
   // every other manufacturer keeps the simple flat list.
-  const isNeuropixels = selectedManufacturer === "imec";
+  const groupingConfig = selectedManufacturer
+    ? getGroupingConfig(selectedManufacturer)
+    : undefined;
   const groups = useMemo(
-    () => (isNeuropixels ? groupNeuropixels(filteredEntries) : []),
-    [isNeuropixels, filteredEntries],
+    () => (groupingConfig ? groupEntries(filteredEntries, groupingConfig) : null),
+    [groupingConfig, filteredEntries],
   );
 
   // While searching, force every group open so matches aren't hidden inside a
@@ -74,30 +78,19 @@ export function Sidebar() {
   // search clears, the user's manual expand/collapse state takes over again.
   const isSearching = searchQuery.trim().length > 0;
 
-  // Both levels start collapsed (empty expanded sets). A platform shows its
-  // families only when expanded; a family shows its probes only when expanded.
-  const [expandedPlatforms, setExpandedPlatforms] = useState<Set<string>>(
-    () => new Set(),
-  );
-  const [expandedFamilies, setExpandedFamilies] = useState<Set<string>>(
-    () => new Set(),
-  );
-  const togglePlatform = (platform: string) =>
-    setExpandedPlatforms((prev) => {
-      const next = new Set(prev);
-      if (next.has(platform)) next.delete(platform);
-      else next.add(platform);
-      return next;
-    });
-  const toggleFamily = (key: string) =>
-    setExpandedFamilies((prev) => {
+  // Every collapsible node starts collapsed. Expansion is keyed by the node's
+  // full path (joined ancestor labels), so the same key is stable across the
+  // arbitrary-depth hierarchy.
+  const [expanded, setExpanded] = useState<Set<string>>(() => new Set());
+  const toggle = (key: string) =>
+    setExpanded((prev) => {
       const next = new Set(prev);
       if (next.has(key)) next.delete(key);
       else next.add(key);
       return next;
     });
 
-  const renderItem = (entry: ManifestEntry, showVariant: boolean) => (
+  const renderItem = (entry: ManifestEntry) => (
     <button
       key={entry.id}
       type="button"
@@ -108,17 +101,57 @@ export function Sidebar() {
       }
       onClick={() => selectProbe(entry.id)}
     >
-      <span className="sidebar-item-name">
-        {entry.displayName}
-        {showVariant && variantLabel(entry) ? (
-          <span className="sidebar-item-variant"> {variantLabel(entry)}</span>
-        ) : null}
-      </span>
+      <span className="sidebar-item-name">{entry.displayName}</span>
       <span className="sidebar-item-meta">
         {entry.contactCount} contacts · {entry.shankCount} shanks
       </span>
     </button>
   );
+
+  // Renders one node of the grouped tree at any depth. A collapsible node is a
+  // toggle header; a non-collapsible one is a static divider. Open nodes recurse
+  // into their children, or list their entries when they are leaves.
+  const renderNode = (node: GroupNode, depth: number, parentPath: string[]) => {
+    const path = [...parentPath, node.label];
+    const key = path.join("||");
+    const open = !node.collapsible || isSearching || expanded.has(key);
+    const wrapClass =
+      depth === 0
+        ? "sidebar-group"
+        : depth === 1
+          ? "sidebar-subgroup"
+          : "sidebar-subdivision";
+    return (
+      <div className={wrapClass} key={key}>
+        {node.collapsible ? (
+          <button
+            type="button"
+            className={
+              depth === 0 ? "sidebar-group-header" : "sidebar-subgroup-header"
+            }
+            aria-expanded={open}
+            onClick={() => toggle(key)}
+          >
+            <span className="sidebar-group-caret">{open ? "▾" : "▸"}</span>
+            <span
+              className={
+                depth === 0 ? "sidebar-group-title" : "sidebar-subgroup-title"
+              }
+            >
+              {node.label}
+            </span>
+            <span className="sidebar-group-count">{node.count}</span>
+          </button>
+        ) : (
+          <p className="sidebar-subgroup-divider">{node.label}</p>
+        )}
+        {open &&
+          (node.children
+            ? node.children.map((child) => renderNode(child, depth + 1, path))
+            : node.entries?.map((entry) => renderItem(entry)))}
+      </div>
+    );
+  };
 
   return (
     <div className="sidebar">
@@ -173,71 +206,12 @@ export function Sidebar() {
         )}
 
         {manifestStatus === "success" &&
-          !isNeuropixels &&
-          filteredEntries.map((entry) => renderItem(entry, false))}
+          !groups &&
+          filteredEntries.map((entry) => renderItem(entry))}
 
         {manifestStatus === "success" &&
-          isNeuropixels &&
-          groups.map((group) => {
-            const platformOpen = isSearching || expandedPlatforms.has(group.platform);
-            return (
-              <div className="sidebar-group" key={group.platform}>
-                <button
-                  type="button"
-                  className="sidebar-group-header"
-                  aria-expanded={platformOpen}
-                  onClick={() => togglePlatform(group.platform)}
-                >
-                  <span className="sidebar-group-caret">
-                    {platformOpen ? "▾" : "▸"}
-                  </span>
-                  <span className="sidebar-group-title">{group.platform}</span>
-                  <span className="sidebar-group-count">{group.count}</span>
-                </button>
-                {platformOpen &&
-                  group.families.map((fam) => {
-                    const familyKey = `${group.platform}||${fam.family}`;
-                    const familyOpen = isSearching || expandedFamilies.has(familyKey);
-                    return (
-                      <div className="sidebar-subgroup" key={fam.family}>
-                        <button
-                          type="button"
-                          className="sidebar-subgroup-header"
-                          aria-expanded={familyOpen}
-                          onClick={() => toggleFamily(familyKey)}
-                        >
-                          <span className="sidebar-group-caret">
-                            {familyOpen ? "▾" : "▸"}
-                          </span>
-                          <span className="sidebar-subgroup-title">
-                            {fam.family}
-                          </span>
-                          <span className="sidebar-group-count">
-                            {fam.entries.length}
-                          </span>
-                        </button>
-                        {familyOpen &&
-                          fam.subgroups.map((sub) => (
-                            <div
-                              className="sidebar-subdivision"
-                              key={sub.label || "_flat"}
-                            >
-                              {sub.label && (
-                                <p className="sidebar-subgroup-divider">
-                                  {sub.label}
-                                </p>
-                              )}
-                              {sub.entries.map((entry) =>
-                                renderItem(entry, true),
-                              )}
-                            </div>
-                          ))}
-                      </div>
-                    );
-                  })}
-              </div>
-            );
-          })}
+          groups &&
+          groups.map((node) => renderNode(node, 0, []))}
       </div>
     </div>
   );
