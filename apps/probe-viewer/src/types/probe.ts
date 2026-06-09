@@ -28,6 +28,15 @@ export interface ContactShapeParams {
   height?: number;   // for rect
 }
 
+// The spatial view over the probe: where the camera sits and how magnified.
+// Plain data (no methods) so it stays referentially diff-able by the store and
+// trivially serializable to the URL query string.
+export interface ProbeViewerCamera {
+  zoom: number;
+  centerX: number | null;  // null = centered on geometry center
+  centerY: number | null;  // in probe coordinates (micrometers)
+}
+
 export interface ProbeInterfaceProbe {
   ndim: number;
   si_units: string;

@@ -14,14 +14,17 @@ import type {
 
 import { useResizeObserver } from "../hooks/useResizeObserver";
 import { VIEW_ZOOM_MAX, VIEW_ZOOM_MIN } from "../state/useAppStore";
-import type { ContactShapeParams, ManifestEntry, ProbeInterfaceFile } from "../types/probe";
+import type {
+  ContactShapeParams,
+  ManifestEntry,
+  ProbeInterfaceFile,
+  ProbeViewerCamera,
+} from "../types/probe";
 
 interface ProbeCanvasProps {
   entry: ManifestEntry;
   probeData: ProbeInterfaceFile;
-  zoom: number;
-  viewCenterX: number | null;  // probe coordinates (µm), null = geometry center
-  viewCenterY: number | null;
+  camera: ProbeViewerCamera;
   showContactIds: boolean;
   showScaleBar: boolean;
   onViewCenterChange: (x: number | null, y: number | null) => void;
@@ -79,9 +82,7 @@ export const ProbeCanvas = forwardRef<HTMLCanvasElement, ProbeCanvasProps>(
     {
       entry,
       probeData,
-      zoom,
-      viewCenterX,
-      viewCenterY,
+      camera,
       showContactIds,
       showScaleBar,
       onViewCenterChange,
@@ -89,6 +90,7 @@ export const ProbeCanvas = forwardRef<HTMLCanvasElement, ProbeCanvasProps>(
     },
     ref
   ) {
+  const { zoom, centerX, centerY } = camera;
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
   // Expose canvas to parent for export
@@ -109,8 +111,8 @@ export const ProbeCanvas = forwardRef<HTMLCanvasElement, ProbeCanvasProps>(
   const probe = useMemo(() => probeData.probes?.[0], [probeData]);
 
   // Calculate effective view center (use geometry center if null)
-  const effectiveViewCenterX = viewCenterX ?? geometry?.centerX ?? 0;
-  const effectiveViewCenterY = viewCenterY ?? geometry?.centerY ?? 0;
+  const effectiveViewCenterX = centerX ?? geometry?.centerX ?? 0;
+  const effectiveViewCenterY = centerY ?? geometry?.centerY ?? 0;
 
   useEffect(() => {
     if (!canvasRef.current || !size.width || !size.height || !geometry || !probe) {
@@ -568,8 +570,8 @@ export const ProbeCanvas = forwardRef<HTMLCanvasElement, ProbeCanvasProps>(
           // read it directly (instead of parsing the hash). These mirror the URL
           // params: cx/cy are omitted at the default view, exactly like the URL.
           data-zoom={zoom}
-          data-view-cx={viewCenterX ?? undefined}
-          data-view-cy={viewCenterY ?? undefined}
+          data-view-cx={centerX ?? undefined}
+          data-view-cy={centerY ?? undefined}
           onPointerDown={handlePointerDown}
           onPointerMove={handlePointerMove}
           onPointerUp={handlePointerUp}

@@ -1,10 +1,4 @@
-import type { ProbeInterfaceFile, ContactShapeParams } from "../types/probe";
-
-interface ExportViewState {
-  zoom: number;
-  viewCenterX: number | null;
-  viewCenterY: number | null;
-}
+import type { ProbeInterfaceFile, ContactShapeParams, ProbeViewerCamera } from "../types/probe";
 
 interface CanvasSize {
   width: number;
@@ -63,7 +57,7 @@ function computeGeometrySummary(probeData: ProbeInterfaceFile): GeometrySummary 
  */
 export function exportProbeAsPng(
   probeData: ProbeInterfaceFile,
-  viewState: ExportViewState,
+  camera: ProbeViewerCamera,
   canvasSize: CanvasSize,
   filename: string,
   showScaleBar: boolean
@@ -83,7 +77,7 @@ export function exportProbeAsPng(
   ctx.fillRect(0, 0, canvasSize.width, canvasSize.height);
 
   // Render probe (no contact IDs, scale bar if enabled)
-  renderProbeToContext(ctx, probeData, viewState, canvasSize, showScaleBar);
+  renderProbeToContext(ctx, probeData, camera, canvasSize, showScaleBar);
 
   // Download
   const link = document.createElement("a");
@@ -98,12 +92,12 @@ export function exportProbeAsPng(
  */
 export function exportProbeAsSvg(
   probeData: ProbeInterfaceFile,
-  viewState: ExportViewState,
+  camera: ProbeViewerCamera,
   canvasSize: CanvasSize,
   filename: string,
   showScaleBar: boolean
 ): void {
-  const svgString = generateProbeSvgString(probeData, viewState, canvasSize, showScaleBar);
+  const svgString = generateProbeSvgString(probeData, camera, canvasSize, showScaleBar);
   const blob = new Blob([svgString], { type: "image/svg+xml" });
   const link = document.createElement("a");
   link.download = filename;
@@ -119,7 +113,7 @@ export function exportProbeAsSvg(
 function renderProbeToContext(
   ctx: CanvasRenderingContext2D,
   probeData: ProbeInterfaceFile,
-  viewState: ExportViewState,
+  camera: ProbeViewerCamera,
   canvasSize: CanvasSize,
   showScaleBar: boolean
 ): void {
@@ -127,12 +121,12 @@ function renderProbeToContext(
   const probe = probeData.probes?.[0];
   if (!geometry || !probe) return;
 
-  const { zoom, viewCenterX, viewCenterY } = viewState;
+  const { zoom, centerX, centerY } = camera;
   const { width: widthPx, height: heightPx } = canvasSize;
 
   // Calculate effective view center (use geometry center if null)
-  const effectiveViewCenterX = viewCenterX ?? geometry.centerX;
-  const effectiveViewCenterY = viewCenterY ?? geometry.centerY;
+  const effectiveViewCenterX = centerX ?? geometry.centerX;
+  const effectiveViewCenterY = centerY ?? geometry.centerY;
 
   const padding = 40;
   const availableWidth = Math.max(10, widthPx - padding * 2);
@@ -310,7 +304,7 @@ function renderProbeToContext(
  */
 function generateProbeSvgString(
   probeData: ProbeInterfaceFile,
-  viewState: ExportViewState,
+  camera: ProbeViewerCamera,
   canvasSize: CanvasSize,
   showScaleBar: boolean
 ): string {
@@ -321,12 +315,12 @@ function generateProbeSvgString(
     return `<svg xmlns="http://www.w3.org/2000/svg" width="${canvasSize.width}" height="${canvasSize.height}"></svg>`;
   }
 
-  const { zoom, viewCenterX, viewCenterY } = viewState;
+  const { zoom, centerX, centerY } = camera;
   const { width: widthPx, height: heightPx } = canvasSize;
 
   // Calculate effective view center (use geometry center if null)
-  const effectiveViewCenterX = viewCenterX ?? geometry.centerX;
-  const effectiveViewCenterY = viewCenterY ?? geometry.centerY;
+  const effectiveViewCenterX = centerX ?? geometry.centerX;
+  const effectiveViewCenterY = centerY ?? geometry.centerY;
 
   const padding = 40;
   const availableWidth = Math.max(10, widthPx - padding * 2);
