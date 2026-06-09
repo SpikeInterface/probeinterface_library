@@ -128,12 +128,6 @@
   color: #475569;
 }
 
-.sidebar-item-variant {
-  font-weight: 400;
-  color: #64748b;
-  font-size: 0.85rem;
-}
-
 /* Neuropixels hierarchy grouping */
 .sidebar-group {
   display: flex;
