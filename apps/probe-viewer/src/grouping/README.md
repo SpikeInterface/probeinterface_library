@@ -18,13 +18,10 @@ dependency. The config is `{ hierarchy }`, a tree of nodes. Each node has a
 `label` and either `children` (more nodes) or `probes` (model ids, in display
 order) at the leaves.
 
-`collapsible` is a per-node property that **propagates to descendants**: a node
-uses its own `collapsible` when set, otherwise it inherits the resolved value of
-its parent, and the top-level default is `true`. So only the exceptions need
-stating: the length bands set `collapsible: false` (a static, always-open
-divider) and that flows down to their probes, while everything else omits it and
-inherits the default. `true` is a foldable header with a caret; `false` is a
-static divider.
+`collapsible` is a per-node property that **defaults to `true`**, so only the
+exceptions need stating: the length bands set `collapsible: false`, while every
+other node omits it. `true` is a foldable header with a caret; `false` is a
+static, always-open divider.
 
 The walker (`groupEntries.ts`) attaches each manifest entry to the node listing
 its model, prunes empty branches, and collects anything not placed into a

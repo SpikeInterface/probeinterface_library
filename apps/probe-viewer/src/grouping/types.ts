@@ -5,16 +5,14 @@ import type { ManifestEntry } from "../types/probe";
 // model ids at the leaves. A manufacturer with no config renders as a flat list
 // (see ./index.ts).
 //
-// Collapsibility is a per-node property that propagates to descendants: a node
-// uses its own `collapsible` when set, otherwise it inherits the resolved value
-// of its parent, and the top-level default is `true`. So only the exceptions
-// need stating: the length bands set `collapsible: false`, which flows down to
-// their probes, while everything else inherits the default and stays foldable.
+// Collapsibility is per node and defaults to `true`, so only the exceptions
+// need stating: the length bands set `collapsible: false` to render as static
+// dividers, and every other node omits it and stays a foldable header.
 
 export interface HierarchyNode {
   label: string;
-  // true => a collapsible group header; false => a static, always-open divider.
-  // Omitted => inherit the parent's resolved value (root default: true).
+  // true (default) => a collapsible group header; false => a static, always-open
+  // divider.
   collapsible?: boolean;
   children?: HierarchyNode[];
   probes?: string[]; // model ids, in display order

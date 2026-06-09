@@ -6,14 +6,10 @@ import type { GroupNode, HierarchyConfig, HierarchyNode } from "./types";
 // probe needs a home in the config.
 const UNGROUPED_LABEL = "Ungrouped";
 
-// Top-level default when a node does not set `collapsible` and has no parent.
-const ROOT_COLLAPSIBLE = true;
-
 // Resolves the explicit hierarchy against the given (already search-filtered)
 // entries: attaches each entry to the node that lists its model id, prunes
 // empty branches, and gathers anything unplaced into a trailing "Ungrouped"
-// group. `collapsible` is resolved per node, inheriting the parent's value when
-// the node does not set its own.
+// group. `collapsible` is per node and defaults to true.
 export function groupEntries(
   entries: ManifestEntry[],
   config: HierarchyConfig,
@@ -22,12 +18,12 @@ export function groupEntries(
   for (const entry of entries) byModel.set(entry.model, entry);
   const placed = new Set<string>();
 
-  const walk = (node: HierarchyNode, inherited: boolean): GroupNode | null => {
-    const collapsible = node.collapsible ?? inherited;
+  const walk = (node: HierarchyNode): GroupNode | null => {
+    const collapsible = node.collapsible ?? true;
 
     if (node.children) {
       const children = node.children
-        .map((child) => walk(child, collapsible))
+        .map((child) => walk(child))
         .filter((child): child is GroupNode => child !== null);
       if (children.length === 0) return null;
       const count = children.reduce((sum, child) => sum + child.count, 0);
@@ -47,7 +43,7 @@ export function groupEntries(
   };
 
   const groups = config.hierarchy
-    .map((node) => walk(node, ROOT_COLLAPSIBLE))
+    .map((node) => walk(node))
     .filter((group): group is GroupNode => group !== null);
 
   const leftovers = entries.filter((entry) => !placed.has(entry.model));
