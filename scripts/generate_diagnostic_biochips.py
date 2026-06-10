@@ -1,3 +1,7 @@
+# /// script
+# requires-python = ">=3.10"
+# dependencies = ["probeinterface"]
+# ///
 """Generator for Diagnostic Biochips Deep Array probes.
 
 The source of truth is the 2022 Diagnostic Biochips catalog (one datasheet page
@@ -27,7 +31,9 @@ Two layout families appear on the datasheets:
   level, i.e. exactly two columns. This is checked against the datasheet value
   for every model before writing (see _build_probe).
 
-Run with:  uv run --with probeinterface scripts/generate_diagnostic_biochips.py
+Dependencies are declared inline (PEP 723), so this runs standalone:
+
+    uv run scripts/generate_diagnostic_biochips.py
 """
 
 from dataclasses import dataclass
