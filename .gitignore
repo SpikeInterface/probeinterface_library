@@ -3,6 +3,7 @@ apps/probe-viewer/public/data/
 apps/probe-viewer/public/probes-manifest.json
 apps/probe-viewer/node_modules/
 apps/probe-viewer/dist/
+apps/probe-viewer/.vite/
 
 # Build cache
 .cache/

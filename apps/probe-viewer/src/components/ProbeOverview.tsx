@@ -1,11 +1,9 @@
 import { useEffect, useRef, useMemo } from "react";
-import type { ProbeInterfaceFile } from "../types/probe";
+import type { ProbeInterfaceFile, ProbeViewerCamera } from "../types/probe";
 
 interface ProbeOverviewProps {
   probeData: ProbeInterfaceFile;
-  zoom: number;
-  viewCenterX: number | null;  // probe coordinates (µm), null = geometry center
-  viewCenterY: number | null;
+  camera: ProbeViewerCamera;
   /** Main canvas dimensions */
   mainWidth: number;
   mainHeight: number;
@@ -53,20 +51,19 @@ function computeGeometrySummary(probeData: ProbeInterfaceFile): GeometrySummary 
 
 export function ProbeOverview({
   probeData,
-  zoom,
-  viewCenterX,
-  viewCenterY,
+  camera,
   mainWidth,
   mainHeight,
   onViewCenterChange,
 }: ProbeOverviewProps) {
+  const { zoom, centerX, centerY } = camera;
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const geometry = useMemo(() => computeGeometrySummary(probeData), [probeData]);
   const probe = useMemo(() => probeData.probes?.[0], [probeData]);
 
   // Calculate effective view center (use geometry center if null)
-  const effectiveViewCenterX = viewCenterX ?? geometry?.centerX ?? 0;
-  const effectiveViewCenterY = viewCenterY ?? geometry?.centerY ?? 0;
+  const effectiveViewCenterX = centerX ?? geometry?.centerX ?? 0;
+  const effectiveViewCenterY = centerY ?? geometry?.centerY ?? 0;
 
   // Fixed minimap size
   const MINIMAP_WIDTH = 120;
