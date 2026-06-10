@@ -1,6 +1,10 @@
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import { useAppStore } from "../state/useAppStore";
+import type { ManifestEntry } from "../types/probe";
+import { groupEntries } from "../grouping/groupEntries";
+import { getGroupingConfig } from "../grouping";
+import type { GroupNode } from "../grouping/types";
 
 const MANUFACTURER_DISPLAY_NAMES: Record<string, string> = {
   cambridgeneurotech: "Cambridge NeuroTech",
@@ -60,6 +64,96 @@ export function Sidebar() {
     }
   }, [filteredEntries, selectedProbeId, selectProbe]);
 
+  // A manufacturer with a grouping config (only IMEC today) gets a hierarchy;
+  // every other manufacturer keeps the simple flat list.
+  const groupingConfig = selectedManufacturer
+    ? getGroupingConfig(selectedManufacturer)
+    : undefined;
+  const groups = useMemo(
+    () => (groupingConfig ? groupEntries(filteredEntries, groupingConfig) : null),
+    [groupingConfig, filteredEntries],
+  );
+
+  // While searching, force every group open so matches aren't hidden inside a
+  // collapsed group (filteredEntries already contains only the hits). When the
+  // search clears, the user's manual expand/collapse state takes over again.
+  const isSearching = searchQuery.trim().length > 0;
+
+  // Every collapsible node starts collapsed. Expansion is keyed by the node's
+  // full path (joined ancestor labels), so the same key is stable across the
+  // arbitrary-depth hierarchy.
+  const [expanded, setExpanded] = useState<Set<string>>(() => new Set());
+  const toggle = (key: string) =>
+    setExpanded((prev) => {
+      const next = new Set(prev);
+      if (next.has(key)) next.delete(key);
+      else next.add(key);
+      return next;
+    });
+
+  const renderItem = (entry: ManifestEntry) => (
+    <button
+      key={entry.id}
+      type="button"
+      className={
+        entry.id === selectedProbeId
+          ? "sidebar-item sidebar-item--active"
+          : "sidebar-item"
+      }
+      onClick={() => selectProbe(entry.id)}
+    >
+      <span className="sidebar-item-name">{entry.displayName}</span>
+      <span className="sidebar-item-meta">
+        {entry.contactCount} contacts · {entry.shankCount} shanks
+      </span>
+    </button>
+  );
+
+  // Renders one node of the grouped tree at any depth. A collapsible node is a
+  // toggle header; a non-collapsible one is a static divider. Open nodes recurse
+  // into their children, or list their entries when they are leaves.
+  const renderNode = (node: GroupNode, depth: number, parentPath: string[]) => {
+    const path = [...parentPath, node.label];
+    const key = path.join("||");
+    const open = !node.collapsible || isSearching || expanded.has(key);
+    const wrapClass =
+      depth === 0
+        ? "sidebar-group"
+        : depth === 1
+          ? "sidebar-subgroup"
+          : "sidebar-subdivision";
+    return (
+      <div className={wrapClass} key={key}>
+        {node.collapsible ? (
+          <button
+            type="button"
+            className={
+              depth === 0 ? "sidebar-group-header" : "sidebar-subgroup-header"
+            }
+            aria-expanded={open}
+            onClick={() => toggle(key)}
+          >
+            <span className="sidebar-group-caret">{open ? "▾" : "▸"}</span>
+            <span
+              className={
+                depth === 0 ? "sidebar-group-title" : "sidebar-subgroup-title"
+              }
+            >
+              {node.label}
+            </span>
+            <span className="sidebar-group-count">{node.count}</span>
+          </button>
+        ) : (
+          <p className="sidebar-subgroup-divider">{node.label}</p>
+        )}
+        {open &&
+          (node.children
+            ? node.children.map((child) => renderNode(child, depth + 1, path))
+            : node.entries?.map((entry) => renderItem(entry)))}
+      </div>
+    );
+  };
+
   return (
     <div className="sidebar">
       <header className="sidebar-header">
@@ -111,23 +205,14 @@ export function Sidebar() {
         {manifestStatus === "success" && filteredEntries.length === 0 && (
           <p className="sidebar-hint">No probes match the current filters.</p>
         )}
-        {filteredEntries.map((entry) => (
-          <button
-            key={entry.id}
-            type="button"
-            className={
-              entry.id === selectedProbeId
-                ? "sidebar-item sidebar-item--active"
-                : "sidebar-item"
-            }
-            onClick={() => selectProbe(entry.id)}
-          >
-            <span className="sidebar-item-name">{entry.displayName}</span>
-            <span className="sidebar-item-meta">
-              {entry.contactCount} contacts · {entry.shankCount} shanks
-            </span>
-          </button>
-        ))}
+
+        {manifestStatus === "success" &&
+          !groups &&
+          filteredEntries.map((entry) => renderItem(entry))}
+
+        {manifestStatus === "success" &&
+          groups &&
+          groups.map((node) => renderNode(node, 0, []))}
       </div>
     </div>
   );

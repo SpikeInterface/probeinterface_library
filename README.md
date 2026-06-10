@@ -1,6 +1,6 @@
 # ProbeInterface Library
 
-Library of probes in the **probeinterface** format.
+Library of probes in the **probeinterface** format, live at: https://spikeinterface.github.io/probeinterface_library
 
 
 See:

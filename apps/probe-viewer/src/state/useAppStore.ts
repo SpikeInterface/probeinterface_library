@@ -2,7 +2,7 @@ import { create } from "zustand";
 
 import { fetchManifest } from "../services/manifest";
 import { fetchProbeData } from "../services/probeLoader";
-import type { ManifestEntry, ProbeInterfaceFile } from "../types/probe";
+import type { ManifestEntry, ProbeInterfaceFile, ProbeViewerCamera } from "../types/probe";
 
 type LoadStatus = "idle" | "loading" | "success" | "error";
 
@@ -12,9 +12,7 @@ interface ProbeLoadState {
 }
 
 interface ViewState {
-  zoom: number;
-  viewCenterX: number | null;  // null = centered on geometry center
-  viewCenterY: number | null;  // in probe coordinates (micrometers)
+  camera: ProbeViewerCamera;
   showContactIds: boolean;
   showScaleBar: boolean;
   showOverview: boolean;
@@ -30,6 +28,10 @@ interface AppState {
   probeCache: Record<string, ProbeInterfaceFile>;
   probeStatus: Record<string, ProbeLoadState>;
   view: ViewState;
+  // false until the camera has been seeded from the URL on load (or there was
+  // nothing to seed). The URL writer holds off until this flips, so it cannot
+  // clobber a shared link with the default camera at mount.
+  cameraInitialized: boolean;
 
   loadManifest: () => Promise<void>;
   selectManufacturer: (manufacturer?: string) => void;
@@ -38,6 +40,7 @@ interface AppState {
   ensureProbeLoaded: (probeId: string) => Promise<ProbeInterfaceFile | undefined>;
   setZoom: (zoom: number) => void;
   setViewCenter: (x: number | null, y: number | null) => void;
+  markCameraInitialized: () => void;
   resetView: () => void;
   toggleContactIds: (value?: boolean) => void;
   toggleScaleBar: (value?: boolean) => void;
@@ -47,10 +50,14 @@ interface AppState {
 export const VIEW_ZOOM_MIN = 0.1;
 export const VIEW_ZOOM_MAX = 100;  // High max for long probes like Neuropixels
 
-const INITIAL_VIEW_STATE: ViewState = {
+const INITIAL_CAMERA: ProbeViewerCamera = {
   zoom: 1,
-  viewCenterX: null,
-  viewCenterY: null,
+  centerX: null,
+  centerY: null,
+};
+
+const INITIAL_VIEW_STATE: ViewState = {
+  camera: INITIAL_CAMERA,
   showContactIds: false,
   showScaleBar: true,
   showOverview: true,
@@ -70,6 +77,7 @@ export const useAppStore = create<AppState>((set, get) => ({
   probeCache: {},
   probeStatus: {},
   view: INITIAL_VIEW_STATE,
+  cameraInitialized: false,
 
   loadManifest: async () => {
     const { manifestStatus } = get();
@@ -171,7 +179,10 @@ export const useAppStore = create<AppState>((set, get) => ({
     set((state) => ({
       view: {
         ...state.view,
-        zoom: clamp(zoom, VIEW_ZOOM_MIN, VIEW_ZOOM_MAX),
+        camera: {
+          ...state.view.camera,
+          zoom: clamp(zoom, VIEW_ZOOM_MIN, VIEW_ZOOM_MAX),
+        },
       },
     })),
 
@@ -179,10 +190,11 @@ export const useAppStore = create<AppState>((set, get) => ({
     set((state) => ({
       view: {
         ...state.view,
-        viewCenterX: x,
-        viewCenterY: y,
+        camera: { ...state.view.camera, centerX: x, centerY: y },
       },
     })),
+
+  markCameraInitialized: () => set({ cameraInitialized: true }),
 
   resetView: () =>
     set((state) => ({

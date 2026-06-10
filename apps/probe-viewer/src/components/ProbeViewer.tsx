@@ -94,25 +94,25 @@ export function ProbeViewer() {
     if (probeData && entry) {
       exportProbeAsPng(
         probeData,
-        { zoom: view.zoom, viewCenterX: view.viewCenterX, viewCenterY: view.viewCenterY },
+        view.camera,
         { width: canvasSize.width, height: canvasSize.height },
         `${entry.id}.png`,
         view.showScaleBar
       );
     }
-  }, [probeData, entry, view.zoom, view.viewCenterX, view.viewCenterY, canvasSize.width, canvasSize.height, view.showScaleBar]);
+  }, [probeData, entry, view.camera, canvasSize.width, canvasSize.height, view.showScaleBar]);
 
   const handleExportSvg = useCallback(() => {
     if (probeData && entry) {
       exportProbeAsSvg(
         probeData,
-        { zoom: view.zoom, viewCenterX: view.viewCenterX, viewCenterY: view.viewCenterY },
+        view.camera,
         { width: canvasSize.width, height: canvasSize.height },
         `${entry.id}.svg`,
         view.showScaleBar
       );
     }
-  }, [probeData, entry, view.zoom, view.viewCenterX, view.viewCenterY, canvasSize.width, canvasSize.height, view.showScaleBar]);
+  }, [probeData, entry, view.camera, canvasSize.width, canvasSize.height, view.showScaleBar]);
 
   const [shareCopied, setShareCopied] = useState(false);
   const handleShareView = useCallback(() => {
@@ -129,8 +129,8 @@ export function ProbeViewer() {
       // Get current view state directly from store (not stale closure value)
       // This is critical because App.tsx's URL effect may have updated the store
       // after this component rendered but before this effect runs
-      const currentView = useAppStore.getState().view;
-      const hasUrlViewState = currentView.zoom !== 1 || currentView.viewCenterX !== null || currentView.viewCenterY !== null;
+      const currentCamera = useAppStore.getState().view.camera;
+      const hasUrlViewState = currentCamera.zoom !== 1 || currentCamera.centerX !== null || currentCamera.centerY !== null;
       if (!hasUrlViewState) {
         resetView();
       }
@@ -152,8 +152,8 @@ export function ProbeViewer() {
     if (canvasSize.width === 0 || canvasSize.height === 0) return;
 
     // Get current view state directly from store (not stale closure value)
-    const currentView = useAppStore.getState().view;
-    const hasUrlViewState = currentView.zoom !== 1 || currentView.viewCenterX !== null || currentView.viewCenterY !== null;
+    const currentCamera = useAppStore.getState().view.camera;
+    const hasUrlViewState = currentCamera.zoom !== 1 || currentCamera.centerX !== null || currentCamera.centerY !== null;
     if (hasUrlViewState) {
       lastSmartZoomProbeId.current = selectedProbeId;
       return;
@@ -279,14 +279,14 @@ export function ProbeViewer() {
         <div className="viewer-controls-group">
           <button
             type="button"
-            onClick={() => setZoom(Math.min(view.zoom * 1.5, VIEW_ZOOM_MAX))}
+            onClick={() => setZoom(Math.min(view.camera.zoom * 1.5, VIEW_ZOOM_MAX))}
             title="Zoom in"
           >
             {ZoomInIcon}
           </button>
           <button
             type="button"
-            onClick={() => setZoom(Math.max(view.zoom / 1.5, VIEW_ZOOM_MIN))}
+            onClick={() => setZoom(Math.max(view.camera.zoom / 1.5, VIEW_ZOOM_MIN))}
             title="Zoom out"
           >
             {ZoomOutIcon}
@@ -354,9 +354,7 @@ export function ProbeViewer() {
             <ProbeCanvas
               entry={entry}
               probeData={probeData}
-              zoom={view.zoom}
-              viewCenterX={view.viewCenterX}
-              viewCenterY={view.viewCenterY}
+              camera={view.camera}
               showContactIds={view.showContactIds}
               showScaleBar={view.showScaleBar}
               onViewCenterChange={(x, y) => setViewCenter(x, y)}
@@ -365,9 +363,7 @@ export function ProbeViewer() {
             {view.showOverview && (
               <ProbeOverview
                 probeData={probeData}
-                zoom={view.zoom}
-                viewCenterX={view.viewCenterX}
-                viewCenterY={view.viewCenterY}
+                camera={view.camera}
                 mainWidth={canvasSize.width}
                 mainHeight={canvasSize.height}
                 onViewCenterChange={(x, y) => setViewCenter(x, y)}
