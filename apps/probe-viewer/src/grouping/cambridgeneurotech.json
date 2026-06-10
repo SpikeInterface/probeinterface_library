@@ -8,6 +8,7 @@
           "children": [
             {
               "label": "H1b (1 shank)",
+              "collapsible": false,
               "probes": [
                 "ASSY-37-H1b",
                 "ASSY-116-H1b"
@@ -15,6 +16,7 @@
             },
             {
               "label": "H4 (1 shank)",
+              "collapsible": false,
               "probes": [
                 "ASSY-37-H4",
                 "ASSY-116-H4",
@@ -23,6 +25,7 @@
             },
             {
               "label": "H6b (1 shank)",
+              "collapsible": false,
               "probes": [
                 "ASSY-37-H6b",
                 "ASSY-116-H6b",
@@ -31,6 +34,7 @@
             },
             {
               "label": "H7b (1 shank)",
+              "collapsible": false,
               "probes": [
                 "ASSY-37-H7b",
                 "ASSY-116-H7b"
@@ -38,6 +42,7 @@
             },
             {
               "label": "H8b (1 shank)",
+              "collapsible": false,
               "probes": [
                 "ASSY-37-H8b",
                 "ASSY-116-H8b"
@@ -45,6 +50,7 @@
             },
             {
               "label": "H10b (1 shank)",
+              "collapsible": false,
               "probes": [
                 "ASSY-37-H10b",
                 "ASSY-116-H10b",
@@ -58,6 +64,7 @@
           "children": [
             {
               "label": "H1 (2 shanks)",
+              "collapsible": false,
               "probes": [
                 "ASSY-77-H1",
                 "ASSY-156-H1",
@@ -66,6 +73,7 @@
             },
             {
               "label": "H2 (2 shanks)",
+              "collapsible": false,
               "probes": [
                 "ASSY-77-H2",
                 "ASSY-156-H2",
@@ -77,6 +85,7 @@
             },
             {
               "label": "H3 (1 shank)",
+              "collapsible": false,
               "probes": [
                 "ASSY-37-H3",
                 "ASSY-77-H3",
@@ -89,6 +98,7 @@
             },
             {
               "label": "H5 (1 shank)",
+              "collapsible": false,
               "probes": [
                 "ASSY-77-H5",
                 "ASSY-156-H5",
@@ -100,6 +110,7 @@
             },
             {
               "label": "H6 (2 shanks)",
+              "collapsible": false,
               "probes": [
                 "ASSY-77-H6",
                 "ASSY-156-H6",
@@ -111,6 +122,7 @@
             },
             {
               "label": "H7 (2 shanks)",
+              "collapsible": false,
               "probes": [
                 "ASSY-77-H7",
                 "ASSY-156-H7",
@@ -122,6 +134,7 @@
             },
             {
               "label": "H8 (2 shanks)",
+              "collapsible": false,
               "probes": [
                 "ASSY-77-H8",
                 "ASSY-156-H8",
@@ -133,6 +146,7 @@
             },
             {
               "label": "H9 (1 shank)",
+              "collapsible": false,
               "probes": [
                 "ASSY-77-H9",
                 "ASSY-156-H9",
@@ -144,6 +158,7 @@
             },
             {
               "label": "H10 (2 shanks)",
+              "collapsible": false,
               "probes": [
                 "ASSY-77-H10",
                 "ASSY-156-H10",
@@ -160,60 +175,70 @@
           "children": [
             {
               "label": "H7 (1 shank)",
+              "collapsible": false,
               "probes": [
                 "ASSY-325D-H7"
               ]
             },
             {
               "label": "H10 (1 shank)",
+              "collapsible": false,
               "probes": [
                 "ASSY-325D-H10"
               ]
             },
             {
               "label": "H12 (1 shank)",
+              "collapsible": false,
               "probes": [
                 "ASSY-350-H12"
               ]
             },
             {
               "label": "H13 (1 shank)",
+              "collapsible": false,
               "probes": [
                 "ASSY-350-H13"
               ]
             },
             {
               "label": "H14-1 (4 shanks)",
+              "collapsible": false,
               "probes": [
                 "ASSY-350-H14-1"
               ]
             },
             {
               "label": "H14-2 (4 shanks)",
+              "collapsible": false,
               "probes": [
                 "ASSY-350-H14-2"
               ]
             },
             {
               "label": "H15 (2 shanks)",
+              "collapsible": false,
               "probes": [
                 "ASSY-350-H15"
               ]
             },
             {
               "label": "H15_2 (2 shanks)",
+              "collapsible": false,
               "probes": [
                 "ASSY-350-H15_2"
               ]
             },
             {
               "label": "H16 (4 shanks)",
+              "collapsible": false,
               "probes": [
                 "ASSY-350-H16"
               ]
             },
             {
               "label": "H20 (4 shanks)",
+              "collapsible": false,
               "probes": [
                 "ASSY-350-H20"
               ]
@@ -230,6 +255,7 @@
           "children": [
             {
               "label": "P-1 (1 shank)",
+              "collapsible": false,
               "probes": [
                 "ASSY-1-P-1",
                 "ASSY-79-P-1"
@@ -237,6 +263,7 @@
             },
             {
               "label": "P-2 (1 shank)",
+              "collapsible": false,
               "probes": [
                 "ASSY-1-P-2",
                 "ASSY-79-P-2"
@@ -249,6 +276,7 @@
           "children": [
             {
               "label": "P-1 (2 shanks)",
+              "collapsible": false,
               "probes": [
                 "ASSY-37-P-1",
                 "ASSY-116-P-1",
@@ -257,6 +285,7 @@
             },
             {
               "label": "P-2 (2 shanks)",
+              "collapsible": false,
               "probes": [
                 "ASSY-37-P-2",
                 "ASSY-116-P-2",
@@ -270,6 +299,7 @@
           "children": [
             {
               "label": "P-1 (4 shanks)",
+              "collapsible": false,
               "probes": [
                 "ASSY-77-P-1",
                 "ASSY-156-P-1",
@@ -281,6 +311,7 @@
             },
             {
               "label": "P-2 (4 shanks)",
+              "collapsible": false,
               "probes": [
                 "ASSY-77-P-2",
                 "ASSY-156-P-2",
@@ -297,12 +328,14 @@
           "children": [
             {
               "label": "P-1 (1 shank)",
+              "collapsible": false,
               "probes": [
                 "ASSY-325D-P-1"
               ]
             },
             {
               "label": "P-2 (1 shank)",
+              "collapsible": false,
               "probes": [
                 "ASSY-325D-P-2"
               ]
@@ -320,6 +353,7 @@
           "children": [
             {
               "label": "E-1 (1 shank)",
+              "collapsible": false,
               "probes": [
                 "ASSY-1-E-1",
                 "ASSY-79-E-1"
@@ -327,6 +361,7 @@
             },
             {
               "label": "E-2 (1 shank)",
+              "collapsible": false,
               "probes": [
                 "ASSY-1-E-2",
                 "ASSY-79-E-2"
@@ -339,6 +374,7 @@
           "children": [
             {
               "label": "E-1 (2 shanks)",
+              "collapsible": false,
               "probes": [
                 "ASSY-37-E-1",
                 "ASSY-116-E-1",
@@ -347,6 +383,7 @@
             },
             {
               "label": "E-2 (2 shanks)",
+              "collapsible": false,
               "probes": [
                 "ASSY-37-E-2",
                 "ASSY-116-E-2",
@@ -360,6 +397,7 @@
           "children": [
             {
               "label": "E-1 (4 shanks)",
+              "collapsible": false,
               "probes": [
                 "ASSY-77-E-1",
                 "ASSY-156-E-1",
@@ -371,6 +409,7 @@
             },
             {
               "label": "E-2 (4 shanks)",
+              "collapsible": false,
               "probes": [
                 "ASSY-77-E-2",
                 "ASSY-156-E-2",
@@ -387,12 +426,14 @@
           "children": [
             {
               "label": "E-1 (4 shanks)",
+              "collapsible": false,
               "probes": [
                 "ASSY-325D-E-1"
               ]
             },
             {
               "label": "E-2 (4 shanks)",
+              "collapsible": false,
               "probes": [
                 "ASSY-325D-E-2"
               ]
@@ -410,6 +451,7 @@
           "children": [
             {
               "label": "Fb (3 shanks)",
+              "collapsible": false,
               "probes": [
                 "ASSY-37-Fb",
                 "ASSY-116-Fb",
@@ -423,6 +465,7 @@
           "children": [
             {
               "label": "F (6 shanks)",
+              "collapsible": false,
               "probes": [
                 "ASSY-77-F",
                 "ASSY-156-F",
@@ -439,24 +482,28 @@
           "children": [
             {
               "label": "F (6 shanks)",
+              "collapsible": false,
               "probes": [
                 "ASSY-325D-F"
               ]
             },
             {
               "label": "F8-0 (8 shanks)",
+              "collapsible": false,
               "probes": [
                 "ASSY-350-F8-0"
               ]
             },
             {
               "label": "F8-1 (8 shanks)",
+              "collapsible": false,
               "probes": [
                 "ASSY-350-F8-1"
               ]
             },
             {
               "label": "F8-2 (8 shanks)",
+              "collapsible": false,
               "probes": [
                 "ASSY-350-F8-2"
               ]
@@ -474,6 +521,7 @@
           "children": [
             {
               "label": "L1 (1 shank)",
+              "collapsible": false,
               "probes": [
                 "ASSY-79-L1"
               ]
@@ -485,6 +533,7 @@
           "children": [
             {
               "label": "L2 (2 shanks)",
+              "collapsible": false,
               "probes": [
                 "ASSY-37-L2",
                 "ASSY-116-L2"
@@ -497,6 +546,7 @@
           "children": [
             {
               "label": "L3 (1 shank)",
+              "collapsible": false,
               "probes": [
                 "ASSY-77-L3",
                 "ASSY-156-L3",
@@ -513,12 +563,14 @@
           "children": [
             {
               "label": "L13 (1 shank)",
+              "collapsible": false,
               "probes": [
                 "ASSY-350-L13"
               ]
             },
             {
               "label": "L14 (8 shanks)",
+              "collapsible": false,
               "probes": [
                 "ASSY-350-L14"
               ]
@@ -536,6 +588,7 @@
           "children": [
             {
               "label": "M1v1 (1 shank)",
+              "collapsible": false,
               "probes": [
                 "ASSY-77-M1v1",
                 "ASSY-156-M1v1",
@@ -546,6 +599,7 @@
             },
             {
               "label": "M1v2 (1 shank)",
+              "collapsible": false,
               "probes": [
                 "ASSY-77-M1v2",
                 "ASSY-156-M1v2",
@@ -557,6 +611,7 @@
             },
             {
               "label": "M2v1 (1 shank)",
+              "collapsible": false,
               "probes": [
                 "ASSY-77-M2v1",
                 "ASSY-156-M2v1",
@@ -567,6 +622,7 @@
             },
             {
               "label": "M2v2 (1 shank)",
+              "collapsible": false,
               "probes": [
                 "ASSY-77-M2v2",
                 "ASSY-156-M2v2",
