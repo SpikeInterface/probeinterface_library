@@ -5,6 +5,9 @@ apps/probe-viewer/node_modules/
 apps/probe-viewer/dist/
 apps/probe-viewer/.vite/
 
+# Codex
+AGENTS.md
+
 # Build cache
 .cache/
 

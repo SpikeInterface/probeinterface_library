@@ -24,10 +24,17 @@ def plot_and_save_probegroup(
     contact_id_fontsize=5,
     save_figure=False,
     zoom_on_tip=False,
+    zoom_on_contacts=False,
     dpi=300,
     figsize=(15, 15)
 ):
-    """Plot probegroup and optionally save to file."""
+    """Plot probegroup and optionally save to file.
+
+    ``zoom_on_contacts`` crops the single-panel view to the recording band
+    (the contact y-range plus the tip), so probes whose contacts occupy only a
+    small fraction of a long shank (e.g. a 3 mm band on a 90 mm shaft) still
+    render the contacts at a useful size instead of as a sliver.
+    """
     probe = probegroup.probes[0]
     if zoom_on_tip:
         ncols = 2
@@ -66,6 +73,16 @@ def plot_and_save_probegroup(
     else:
         ax_full.set_title(title, fontsize=title_fontsize)
         ax_full.set_xlabel("X (µm)", fontsize=label_fontsize)
+        if zoom_on_contacts:
+            contact_y = probe.contact_positions[:, 1]
+            band_bottom = np.min(probe.probe_planar_contour[:, 1])
+            band_top = np.max(contact_y)
+            margin = 0.04 * (band_top - np.min(contact_y)) + 60
+            shank_left = np.min(probe.probe_planar_contour[:, 0])
+            shank_right = np.max(probe.probe_planar_contour[:, 0])
+            shank_width = shank_right - shank_left
+            ax_full.set_xlim(shank_left - 0.5 * shank_width, shank_right + 0.5 * shank_width)
+            ax_full.set_ylim(band_bottom - 20, band_top + margin)
 
     if save_figure:
         save_dir = Path(__file__).parent / manufacturer / model_name
@@ -85,6 +102,7 @@ def main():
     parser.add_argument("--with-ids", "-ids", action="store_true", help="Display contact IDs")
     parser.add_argument("--save-figure", "-s", action="store_true", help="Save the figure to a file")
     parser.add_argument("--zoom-on-tip", "-z", action="store_true", help="Zoom in on the probe tip")
+    parser.add_argument("--zoom-on-contacts", "-zc", action="store_true", help="Crop the view to the contact band (for long shanks with a short recording region)")
     parser.add_argument("--dpi", type=int, default=600, help="DPI for saved figure")
     parser.add_argument("--title-fontsize", "-t", type=int, default=15, help="Font size for the title")
     parser.add_argument("--label-fontsize", "-l", type=int, default=10, help="Font size for the labels")
@@ -112,6 +130,7 @@ def main():
                 model_name=model_name,
                 save_figure=args.save_figure,
                 zoom_on_tip=args.zoom_on_tip,
+                zoom_on_contacts=args.zoom_on_contacts,
                 with_contact_id=args.with_ids,
                 title_fontsize=args.title_fontsize,
                 label_fontsize=args.label_fontsize,
