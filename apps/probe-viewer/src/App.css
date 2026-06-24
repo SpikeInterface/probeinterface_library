@@ -373,29 +373,6 @@
   color: #fff;
 }
 
-/* Overlay opacity / offset sliders. */
-.viewer-slider {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.4rem;
-  font-size: 0.85rem;
-  color: #1e293b;
-}
-
-.viewer-slider span {
-  text-transform: capitalize;
-  white-space: nowrap;
-}
-
-.viewer-slider input[type="range"] {
-  width: 6rem;
-}
-
-.viewer-slider-value {
-  min-width: 3.2rem;
-  font-variant-numeric: tabular-nums;
-}
-
 /* Color key matching the canvas: gold front, steel-blue back. */
 .viewer-side-swatch {
   width: 0.7rem;

@@ -3,20 +3,15 @@ import { useEffect, useMemo, useRef } from "react";
 import { useResizeObserver } from "../hooks/useResizeObserver";
 import { useProbeViewport } from "../hooks/useProbeViewport";
 import { CONTACT_COLORS, drawContactShape, renderScaleBar } from "../geometry/draw";
-import { buildSideRenderPlan, type SideRenderPlan } from "../geometry/sides";
 import type { ManifestEntry, ProbeInterfaceFile, ProbeViewerCamera } from "../types/probe";
 
 interface DoubleSidedProbeCanvasProps {
   entry: ManifestEntry;
   probeData: ProbeInterfaceFile;
   camera: ProbeViewerCamera;
-  showContactIds: boolean;
   showScaleBar: boolean;
-  prominentSide: string | null;
-  // Independent opacity (0–1) per side; a missing side defaults to 1.
-  sideOpacity: Record<string, number>;
-  // Separation between faces, in probe units (µm).
-  offsetUm: number;
+  // "both" overlays the faces (registration view); a side name isolates one.
+  overlaySide: string;
   onViewCenterChange: (x: number | null, y: number | null) => void;
   onZoom: (zoom: number) => void;
 }
@@ -28,33 +23,28 @@ interface GeometrySummary {
   centerY: number;
 }
 
-// Bounds over the laid-out contacts and contours. The back face is displaced in
-// probe coordinates, so framing must include it; computing from the plan (rather
-// than the raw positions) accounts for the offset automatically.
-function computeGeometryFromPlan(plan: SideRenderPlan): GeometrySummary | null {
+// Bounds over the raw contacts and contour (true positions — the overlay never
+// displaces a face, so framing is just the probe's own extent).
+function computeGeometry(positions: number[][], contour: number[][]): GeometrySummary | null {
   let minX = Number.POSITIVE_INFINITY;
   let minY = Number.POSITIVE_INFINITY;
   let maxX = Number.NEGATIVE_INFINITY;
   let maxY = Number.NEGATIVE_INFINITY;
-
-  const update = (x: number, y: number) => {
-    if (x < minX) minX = x;
-    if (x > maxX) maxX = x;
-    if (y < minY) minY = y;
-    if (y > maxY) maxY = y;
+  const update = (point: number[]) => {
+    if (point[0] < minX) minX = point[0];
+    if (point[0] > maxX) maxX = point[0];
+    if (point[1] < minY) minY = point[1];
+    if (point[1] > maxY) maxY = point[1];
   };
-
-  plan.contacts.forEach((contact) => update(contact.x, contact.y));
-  plan.contours.forEach((contour) => contour.points.forEach((p) => update(p[0], p[1])));
-
+  positions.forEach(update);
+  contour.forEach(update);
   if (!Number.isFinite(minX)) return null;
-
   const width = Math.max(10, maxX - minX);
   const height = Math.max(10, maxY - minY);
   return { width, height, centerX: minX + width / 2, centerY: minY + height / 2 };
 }
 
-function colorForSide(side: string | null) {
+function colorForSide(side: string | undefined) {
   return side === "back" ? CONTACT_COLORS.back : CONTACT_COLORS.front;
 }
 
@@ -62,11 +52,8 @@ export function DoubleSidedProbeCanvas({
   entry,
   probeData,
   camera,
-  showContactIds,
   showScaleBar,
-  prominentSide,
-  sideOpacity,
-  offsetUm,
+  overlaySide,
   onViewCenterChange,
   onZoom,
 }: DoubleSidedProbeCanvasProps) {
@@ -75,11 +62,10 @@ export function DoubleSidedProbeCanvas({
   const lastCanvasSizeRef = useRef({ w: 0, h: 0, dpr: 0 });
 
   const probe = probeData.probes?.[0];
-  const plan = useMemo(
-    () => (probe ? buildSideRenderPlan(probe, prominentSide, offsetUm) : null),
-    [probe, prominentSide, offsetUm],
-  );
-  const geometry = useMemo(() => (plan ? computeGeometryFromPlan(plan) : null), [plan]);
+  const geometry = useMemo(() => {
+    if (!probe) return null;
+    return computeGeometry(probe.contact_positions ?? [], probe.probe_planar_contour ?? []);
+  }, [probe]);
 
   const {
     canvasRef,
@@ -91,7 +77,7 @@ export function DoubleSidedProbeCanvas({
   } = useProbeViewport({ geometry, camera, size, onViewCenterChange, onZoom });
 
   useEffect(() => {
-    if (!canvasRef.current || !size.width || !size.height || !geometry || !probe || !plan) {
+    if (!canvasRef.current || !size.width || !size.height || !geometry || !probe) {
       return;
     }
     const canvas = canvasRef.current;
@@ -120,12 +106,11 @@ export function DoubleSidedProbeCanvas({
     ctx.lineCap = "round";
     ctx.lineJoin = "round";
 
-    const contactShapes = probe.contact_shapes ?? [];
-    const contactShapeParams = probe.contact_shape_params ?? [];
-
-    const drawContour = (points: number[][]) => {
+    // Shared shank outline (both faces occupy the same shank).
+    const contour = probe.probe_planar_contour ?? [];
+    if (contour.length > 1) {
       ctx.beginPath();
-      points.forEach((point, index) => {
+      contour.forEach((point, index) => {
         const [x, y] = projectPoint(point);
         if (index === 0) ctx.moveTo(x, y);
         else ctx.lineTo(x, y);
@@ -136,59 +121,46 @@ export function DoubleSidedProbeCanvas({
       ctx.lineWidth = Math.max(1.2, 2.5 * (scale / 100));
       ctx.fill();
       ctx.stroke();
-    };
+    }
 
-    // Draw each face (shank outline + its contacts) as a unit, the prominent face
-    // last (on top) with adjustable opacity. The whole back face is already
-    // displaced in the plan, so the outline and contacts shift together.
-    const facesInOrder = [...plan.info.sides].sort(
-      (a, b) => Number(a === prominentSide) - Number(b === prominentSide),
-    );
+    const positions = probe.contact_positions ?? [];
+    const sides = probe.contact_sides ?? [];
+    const contactShapes = probe.contact_shapes ?? [];
+    const contactShapeParams = probe.contact_shape_params ?? [];
 
-    facesInOrder.forEach((side) => {
-      const alpha = sideOpacity[side] ?? 1;
-      if (alpha === 0) return;
-      ctx.globalAlpha = alpha;
-
-      const contour = plan.contours.find((c) => c.side === side);
-      if (contour) drawContour(contour.points);
-
-      const colors = colorForSide(side);
-      ctx.fillStyle = colors.fill;
-      ctx.strokeStyle = colors.stroke;
-      ctx.lineWidth = Math.max(1.2, 2.5 * (scale / 150));
-      plan.contacts.forEach((contact) => {
-        if (contact.side !== side) return;
-        const [px, py] = projectPoint([contact.x, contact.y]);
-        const shape = contactShapes[contact.index] ?? "";
-        const params = contactShapeParams[contact.index] ?? {};
-        drawContactShape(ctx, px, py, shape, params, scale);
-        ctx.fill();
-        ctx.stroke();
-      });
-
-      ctx.globalAlpha = 1;
+    // The view shows one face at a time as its own channel map: that face's
+    // contacts in the face color, drawn solid. Front and back share positions,
+    // so only one set is ever on screen, which is why the IDs below never collide.
+    const colors = colorForSide(overlaySide);
+    ctx.fillStyle = colors.fill;
+    ctx.strokeStyle = colors.stroke;
+    ctx.lineWidth = Math.max(1.2, 2.5 * (scale / 150));
+    positions.forEach((position, index) => {
+      if ((sides[index] ?? "front") !== overlaySide) return;
+      const [x, y] = projectPoint(position);
+      drawContactShape(ctx, x, y, contactShapes[index] ?? "", contactShapeParams[index] ?? {}, scale);
+      ctx.fill();
+      ctx.stroke();
     });
 
-    // Contact IDs for the prominent (focused) face only; the two faces sit close
-    // together, so showing both sets would overlap.
-    if (showContactIds && probe.contact_ids) {
+    // Contact IDs make the isolated face a channel map (the point of the view).
+    if (probe.contact_ids) {
       const contactIds = probe.contact_ids;
       ctx.font = `${Math.max(10, Math.min(14, 10 * (scale / 100)))}px "Inter", sans-serif`;
       ctx.textAlign = "center";
       ctx.textBaseline = "top";
       ctx.fillStyle = "rgba(15, 23, 42, 0.95)";
-      plan.contacts.forEach((contact) => {
-        if (contact.side !== prominentSide) return;
-        const [px, py] = projectPoint([contact.x, contact.y]);
-        ctx.fillText(String(contactIds[contact.index] ?? contact.index), px, py + 4);
+      positions.forEach((position, index) => {
+        if ((sides[index] ?? "front") !== overlaySide) return;
+        const [x, y] = projectPoint(position);
+        ctx.fillText(String(contactIds[index] ?? index), x, y + 4);
       });
     }
 
     if (showScaleBar) {
       renderScaleBar(ctx, scale, heightPx);
     }
-  }, [canvasRef, entry.id, geometry, getProjection, plan, prominentSide, probe, showContactIds, showScaleBar, size.height, size.width, zoom, centerX, centerY, sideOpacity]);
+  }, [canvasRef, entry.id, geometry, getProjection, overlaySide, probe, showScaleBar, size.height, size.width, zoom, centerX, centerY]);
 
   return (
     <div ref={containerRef} className="viewer-canvas-surface">

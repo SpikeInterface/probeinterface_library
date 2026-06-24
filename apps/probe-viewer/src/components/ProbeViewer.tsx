@@ -3,7 +3,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useResizeObserver } from "../hooks/useResizeObserver";
 import { useAppStore, VIEW_ZOOM_MAX, VIEW_ZOOM_MIN } from "../state/useAppStore";
 import { exportProbeAsPng, exportProbeAsSvg } from "../utils/exportUtils";
-import { getSideInfo, resolveProminentSide } from "../geometry/sides";
+import { getSideInfo } from "../geometry/sides";
 import { ProbeCanvas } from "./ProbeCanvas";
 import { DoubleSidedProbeCanvas } from "./DoubleSidedProbeCanvas";
 import { ProbeOverview } from "./ProbeOverview";
@@ -64,9 +64,7 @@ export function ProbeViewer() {
   const toggleContactIds = useAppStore((state) => state.toggleContactIds);
   const toggleScaleBar = useAppStore((state) => state.toggleScaleBar);
   const toggleOverview = useAppStore((state) => state.toggleOverview);
-  const setProminentSide = useAppStore((state) => state.setProminentSide);
-  const setSideOpacity = useAppStore((state) => state.setSideOpacity);
-  const setOverlayOffsetUm = useAppStore((state) => state.setOverlayOffsetUm);
+  const setOverlaySide = useAppStore((state) => state.setOverlaySide);
 
   useEffect(() => {
     if (selectedProbeId) {
@@ -98,7 +96,19 @@ export function ProbeViewer() {
     [probeData],
   );
   const isDoubleSided = sideInfo.isDoubleSided;
-  const resolvedProminentSide = resolveProminentSide(sideInfo, view.prominentSide);
+  // Fall back to the probe's first side if the stored selection is not one of
+  // this probe's sides (e.g. a stale value from a previous probe).
+  const activeSide = sideInfo.sides.includes(view.overlaySide)
+    ? view.overlaySide
+    : sideInfo.sides[0];
+  // Per-side contact counts, for the "double-sided" badge.
+  const sideCounts = useMemo(() => {
+    const counts: Record<string, number> = {};
+    for (const side of probeData?.probes?.[0]?.contact_sides ?? []) {
+      counts[side] = (counts[side] ?? 0) + 1;
+    }
+    return counts;
+  }, [probeData]);
 
   // Track canvas container size for minimap
   const { ref: canvasContainerRef, size: canvasSize } = useResizeObserver<HTMLDivElement>();
@@ -357,48 +367,24 @@ export function ProbeViewer() {
         </div>
         {isDoubleSided && (
           <div className="viewer-controls-group viewer-controls-sides">
-            <span className="viewer-controls-label">Double-sided</span>
-            <div className="viewer-segmented" role="group" aria-label="Top face (drawn on top, shows IDs)">
+            <span className="viewer-controls-label">
+              Double-sided ·{" "}
+              {sideInfo.sides.map((side) => `${sideCounts[side] ?? 0} ${side}`).join(" / ")}
+            </span>
+            <div className="viewer-segmented" role="group" aria-label="Which face to show">
               {sideInfo.sides.map((side) => (
                 <button
                   key={side}
                   type="button"
-                  className={resolvedProminentSide === side ? "is-active" : ""}
-                  onClick={() => setProminentSide(side)}
-                  title="Draw this face on top and show its contact IDs"
+                  className={activeSide === side ? "is-active" : ""}
+                  onClick={() => setOverlaySide(side)}
+                  title={`Show the ${side} face channel map`}
                 >
                   <span className={`viewer-side-swatch viewer-side-swatch--${side}`} />
                   {side}
                 </button>
               ))}
             </div>
-            {sideInfo.sides.map((side) => (
-              <label className="viewer-slider" key={side}>
-                <span>
-                  <span className={`viewer-side-swatch viewer-side-swatch--${side}`} /> {side}
-                </span>
-                <input
-                  type="range"
-                  min={0}
-                  max={1}
-                  step={0.05}
-                  value={view.sideOpacity[side] ?? 1}
-                  onChange={(event) => setSideOpacity(side, Number(event.target.value))}
-                />
-              </label>
-            ))}
-            <label className="viewer-slider">
-              <span>offset</span>
-              <input
-                type="range"
-                min={0}
-                max={50}
-                step={1}
-                value={view.overlayOffsetUm}
-                onChange={(event) => setOverlayOffsetUm(Number(event.target.value))}
-              />
-              <span className="viewer-slider-value">{view.overlayOffsetUm} µm</span>
-            </label>
           </div>
         )}
       </section>
@@ -416,11 +402,8 @@ export function ProbeViewer() {
                 entry={entry}
                 probeData={probeData}
                 camera={view.camera}
-                showContactIds={view.showContactIds}
                 showScaleBar={view.showScaleBar}
-                prominentSide={resolvedProminentSide}
-                sideOpacity={view.sideOpacity}
-                offsetUm={view.overlayOffsetUm}
+                overlaySide={activeSide}
                 onViewCenterChange={(x, y) => setViewCenter(x, y)}
                 onZoom={(value) => setZoom(value)}
               />
