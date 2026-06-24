@@ -16,6 +16,15 @@ interface ViewState {
   showContactIds: boolean;
   showScaleBar: boolean;
   showOverview: boolean;
+  // Which face is on top (drawn last) and whose contact IDs show; null means
+  // "the first side". Does not affect opacity.
+  prominentSide: string | null;
+  // Independent opacity per side, keyed by side name (e.g. "front"/"back").
+  // Range 0–1; a missing side defaults to 1. Each side is controlled on its own
+  // so "back opacity" always means the back face, regardless of stacking.
+  sideOpacity: Record<string, number>;
+  // Separation between the two faces in overlay mode, in probe units (µm).
+  overlayOffsetUm: number;
 }
 
 interface AppState {
@@ -45,6 +54,9 @@ interface AppState {
   toggleContactIds: (value?: boolean) => void;
   toggleScaleBar: (value?: boolean) => void;
   toggleOverview: (value?: boolean) => void;
+  setProminentSide: (side: string | null) => void;
+  setSideOpacity: (side: string, opacity: number) => void;
+  setOverlayOffsetUm: (offsetUm: number) => void;
 }
 
 export const VIEW_ZOOM_MIN = 0.1;
@@ -61,6 +73,11 @@ const INITIAL_VIEW_STATE: ViewState = {
   showContactIds: false,
   showScaleBar: true,
   showOverview: true,
+  prominentSide: null,
+  // Both faces fully opaque by default; the offset alone keeps them readable.
+  sideOpacity: {},
+  // A slight separation by default so both faces are distinguishable on load.
+  overlayOffsetUm: 10,
 };
 
 function clamp(value: number, min: number, max: number) {
@@ -201,6 +218,9 @@ export const useAppStore = create<AppState>((set, get) => ({
       view: {
         ...INITIAL_VIEW_STATE,
         showContactIds: state.view.showContactIds,
+        prominentSide: state.view.prominentSide,
+        sideOpacity: state.view.sideOpacity,
+        overlayOffsetUm: state.view.overlayOffsetUm,
       },
     })),
 
@@ -228,6 +248,28 @@ export const useAppStore = create<AppState>((set, get) => ({
         ...state.view,
         showOverview:
           value !== undefined ? value : !state.view.showOverview,
+      },
+    })),
+
+  setProminentSide: (side) =>
+    set((state) => ({ view: { ...state.view, prominentSide: side } })),
+
+  setSideOpacity: (side, opacity) =>
+    set((state) => ({
+      view: {
+        ...state.view,
+        sideOpacity: {
+          ...state.view.sideOpacity,
+          [side]: Math.min(1, Math.max(0, opacity)),
+        },
+      },
+    })),
+
+  setOverlayOffsetUm: (offsetUm) =>
+    set((state) => ({
+      view: {
+        ...state.view,
+        overlayOffsetUm: Math.min(100, Math.max(0, offsetUm)),
       },
     })),
 }));

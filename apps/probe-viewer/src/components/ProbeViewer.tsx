@@ -3,7 +3,9 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useResizeObserver } from "../hooks/useResizeObserver";
 import { useAppStore, VIEW_ZOOM_MAX, VIEW_ZOOM_MIN } from "../state/useAppStore";
 import { exportProbeAsPng, exportProbeAsSvg } from "../utils/exportUtils";
+import { getSideInfo, resolveProminentSide } from "../geometry/sides";
 import { ProbeCanvas } from "./ProbeCanvas";
+import { DoubleSidedProbeCanvas } from "./DoubleSidedProbeCanvas";
 import { ProbeOverview } from "./ProbeOverview";
 
 const ZoomInIcon = (
@@ -62,6 +64,9 @@ export function ProbeViewer() {
   const toggleContactIds = useAppStore((state) => state.toggleContactIds);
   const toggleScaleBar = useAppStore((state) => state.toggleScaleBar);
   const toggleOverview = useAppStore((state) => state.toggleOverview);
+  const setProminentSide = useAppStore((state) => state.setProminentSide);
+  const setSideOpacity = useAppStore((state) => state.setSideOpacity);
+  const setOverlayOffsetUm = useAppStore((state) => state.setOverlayOffsetUm);
 
   useEffect(() => {
     if (selectedProbeId) {
@@ -85,6 +90,15 @@ export function ProbeViewer() {
 
   // Only offer the "Show contact IDs" toggle when the probe actually carries them.
   const hasContactIds = !!probeData?.probes?.[0]?.contact_ids?.length;
+
+  // Double-sided probes (front + back contacts at the same positions) get a
+  // dedicated canvas and a layout control; single-sided probes are unaffected.
+  const sideInfo = useMemo(
+    () => getSideInfo(probeData?.probes?.[0]),
+    [probeData],
+  );
+  const isDoubleSided = sideInfo.isDoubleSided;
+  const resolvedProminentSide = resolveProminentSide(sideInfo, view.prominentSide);
 
   // Track canvas container size for minimap
   const { ref: canvasContainerRef, size: canvasSize } = useResizeObserver<HTMLDivElement>();
@@ -341,6 +355,52 @@ export function ProbeViewer() {
             Overview
           </label>
         </div>
+        {isDoubleSided && (
+          <div className="viewer-controls-group viewer-controls-sides">
+            <span className="viewer-controls-label">Double-sided</span>
+            <div className="viewer-segmented" role="group" aria-label="Top face (drawn on top, shows IDs)">
+              {sideInfo.sides.map((side) => (
+                <button
+                  key={side}
+                  type="button"
+                  className={resolvedProminentSide === side ? "is-active" : ""}
+                  onClick={() => setProminentSide(side)}
+                  title="Draw this face on top and show its contact IDs"
+                >
+                  <span className={`viewer-side-swatch viewer-side-swatch--${side}`} />
+                  {side}
+                </button>
+              ))}
+            </div>
+            {sideInfo.sides.map((side) => (
+              <label className="viewer-slider" key={side}>
+                <span>
+                  <span className={`viewer-side-swatch viewer-side-swatch--${side}`} /> {side}
+                </span>
+                <input
+                  type="range"
+                  min={0}
+                  max={1}
+                  step={0.05}
+                  value={view.sideOpacity[side] ?? 1}
+                  onChange={(event) => setSideOpacity(side, Number(event.target.value))}
+                />
+              </label>
+            ))}
+            <label className="viewer-slider">
+              <span>offset</span>
+              <input
+                type="range"
+                min={0}
+                max={50}
+                step={1}
+                value={view.overlayOffsetUm}
+                onChange={(event) => setOverlayOffsetUm(Number(event.target.value))}
+              />
+              <span className="viewer-slider-value">{view.overlayOffsetUm} µm</span>
+            </label>
+          </div>
+        )}
       </section>
 
       <section className="viewer-canvas" ref={canvasContainerRef}>
@@ -351,15 +411,30 @@ export function ProbeViewer() {
         )}
         {status !== "error" && probeData && (
           <>
-            <ProbeCanvas
-              entry={entry}
-              probeData={probeData}
-              camera={view.camera}
-              showContactIds={view.showContactIds}
-              showScaleBar={view.showScaleBar}
-              onViewCenterChange={(x, y) => setViewCenter(x, y)}
-              onZoom={(value) => setZoom(value)}
-            />
+            {isDoubleSided ? (
+              <DoubleSidedProbeCanvas
+                entry={entry}
+                probeData={probeData}
+                camera={view.camera}
+                showContactIds={view.showContactIds}
+                showScaleBar={view.showScaleBar}
+                prominentSide={resolvedProminentSide}
+                sideOpacity={view.sideOpacity}
+                offsetUm={view.overlayOffsetUm}
+                onViewCenterChange={(x, y) => setViewCenter(x, y)}
+                onZoom={(value) => setZoom(value)}
+              />
+            ) : (
+              <ProbeCanvas
+                entry={entry}
+                probeData={probeData}
+                camera={view.camera}
+                showContactIds={view.showContactIds}
+                showScaleBar={view.showScaleBar}
+                onViewCenterChange={(x, y) => setViewCenter(x, y)}
+                onZoom={(value) => setZoom(value)}
+              />
+            )}
             {view.showOverview && (
               <ProbeOverview
                 probeData={probeData}

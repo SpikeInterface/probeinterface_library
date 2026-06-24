@@ -330,6 +330,88 @@
   color: #1e293b;
 }
 
+/* Double-sided probe layout controls */
+.viewer-controls-sides {
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.viewer-controls-label {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #1e293b;
+}
+
+/* Segmented button group: adjacent buttons read as one control, the active
+   segment highlighted. */
+.viewer-segmented {
+  display: inline-flex;
+  gap: 0;
+}
+
+.viewer-controls .viewer-segmented button {
+  border-radius: 0;
+  text-transform: capitalize;
+}
+
+.viewer-controls .viewer-segmented button:first-child {
+  border-top-left-radius: 0.75rem;
+  border-bottom-left-radius: 0.75rem;
+}
+
+.viewer-controls .viewer-segmented button:last-child {
+  border-top-right-radius: 0.75rem;
+  border-bottom-right-radius: 0.75rem;
+}
+
+.viewer-controls .viewer-segmented button:not(:first-child) {
+  border-left: none;
+}
+
+.viewer-controls .viewer-segmented button.is-active {
+  background: #2563eb;
+  color: #fff;
+}
+
+/* Overlay opacity / offset sliders. */
+.viewer-slider {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.85rem;
+  color: #1e293b;
+}
+
+.viewer-slider span {
+  text-transform: capitalize;
+  white-space: nowrap;
+}
+
+.viewer-slider input[type="range"] {
+  width: 6rem;
+}
+
+.viewer-slider-value {
+  min-width: 3.2rem;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Color key matching the canvas: gold front, steel-blue back. */
+.viewer-side-swatch {
+  width: 0.7rem;
+  height: 0.7rem;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.viewer-side-swatch--front {
+  background: rgb(212, 175, 55);
+}
+
+.viewer-side-swatch--back {
+  background: rgb(70, 130, 180);
+}
+
 .viewer-canvas {
   position: relative;
   min-height: 360px;
