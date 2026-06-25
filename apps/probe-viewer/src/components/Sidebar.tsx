@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 import { useAppStore } from "../state/useAppStore";
 import type { ManifestEntry } from "../types/probe";
@@ -22,6 +23,7 @@ export function Sidebar() {
   const selectManufacturer = useAppStore((state) => state.selectManufacturer);
   const selectedProbeId = useAppStore((state) => state.selectedProbeId);
   const selectProbe = useAppStore((state) => state.selectProbe);
+  const navigate = useNavigate();
   const searchQuery = useAppStore((state) => state.searchQuery);
   const setSearchQuery = useAppStore((state) => state.setSearchQuery);
 
@@ -56,7 +58,11 @@ export function Sidebar() {
   }, [manifest, selectedManufacturer, searchQuery]);
 
   useEffect(() => {
+    // Re-pick a probe only when a stale one is selected (e.g. after switching
+    // manufacturer). Do NOT auto-pick when nothing is selected, or the Home
+    // button (which clears the selection) would immediately bounce back here.
     if (
+      selectedProbeId &&
       filteredEntries.length > 0 &&
       !filteredEntries.some((entry) => entry.id === selectedProbeId)
     ) {
@@ -157,6 +163,17 @@ export function Sidebar() {
   return (
     <div className="sidebar">
       <header className="sidebar-header">
+        <button
+          type="button"
+          className="sidebar-home"
+          onClick={() => {
+            selectProbe(undefined);
+            navigate("/");
+          }}
+          title="Back to the manufacturer catalog"
+        >
+          ← Home
+        </button>
         <h1 className="sidebar-title">Probe Catalog</h1>
         <p className="sidebar-subtitle">
           Browse available probe layouts and inspect their geometry.

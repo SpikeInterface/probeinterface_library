@@ -16,6 +16,9 @@ interface ViewState {
   showContactIds: boolean;
   showScaleBar: boolean;
   showOverview: boolean;
+  // Per-probe zoom ceiling, computed from geometry so the smallest contact can
+  // fill the viewport regardless of probe length (see setMaxZoom callers).
+  maxZoom: number;
 }
 
 interface AppState {
@@ -39,6 +42,7 @@ interface AppState {
   selectProbe: (probeId?: string) => void;
   ensureProbeLoaded: (probeId: string) => Promise<ProbeInterfaceFile | undefined>;
   setZoom: (zoom: number) => void;
+  setMaxZoom: (value: number) => void;
   setViewCenter: (x: number | null, y: number | null) => void;
   markCameraInitialized: () => void;
   resetView: () => void;
@@ -48,7 +52,10 @@ interface AppState {
 }
 
 export const VIEW_ZOOM_MIN = 0.1;
-export const VIEW_ZOOM_MAX = 100;  // High max for long probes like Neuropixels
+export const VIEW_ZOOM_MAX = 100;  // Default ceiling until a per-probe cap is computed
+// Hard ceiling purely against floating-point wobble at extreme scales; the real
+// per-probe cap (view.maxZoom) is almost always well below this.
+export const VIEW_ZOOM_ABSOLUTE_MAX = 1e5;
 
 const INITIAL_CAMERA: ProbeViewerCamera = {
   zoom: 1,
@@ -61,6 +68,7 @@ const INITIAL_VIEW_STATE: ViewState = {
   showContactIds: false,
   showScaleBar: true,
   showOverview: true,
+  maxZoom: VIEW_ZOOM_MAX,
 };
 
 function clamp(value: number, min: number, max: number) {
@@ -181,10 +189,26 @@ export const useAppStore = create<AppState>((set, get) => ({
         ...state.view,
         camera: {
           ...state.view.camera,
-          zoom: clamp(zoom, VIEW_ZOOM_MIN, VIEW_ZOOM_MAX),
+          zoom: clamp(zoom, VIEW_ZOOM_MIN, state.view.maxZoom),
         },
       },
     })),
+
+  setMaxZoom: (value) =>
+    set((state) => {
+      const maxZoom = clamp(value, VIEW_ZOOM_MIN, VIEW_ZOOM_ABSOLUTE_MAX);
+      return {
+        view: {
+          ...state.view,
+          maxZoom,
+          // Re-clamp the current zoom so a tighter cap pulls the view back in.
+          camera: {
+            ...state.view.camera,
+            zoom: Math.min(state.view.camera.zoom, maxZoom),
+          },
+        },
+      };
+    }),
 
   setViewCenter: (x, y) =>
     set((state) => ({
@@ -201,6 +225,8 @@ export const useAppStore = create<AppState>((set, get) => ({
       view: {
         ...INITIAL_VIEW_STATE,
         showContactIds: state.view.showContactIds,
+        // The cap is a property of the probe, not the camera; keep it across a reset.
+        maxZoom: state.view.maxZoom,
       },
     })),
 

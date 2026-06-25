@@ -13,7 +13,7 @@ import type {
 } from "react";
 
 import { useResizeObserver } from "../hooks/useResizeObserver";
-import { VIEW_ZOOM_MAX, VIEW_ZOOM_MIN } from "../state/useAppStore";
+import { VIEW_ZOOM_MIN } from "../state/useAppStore";
 import type {
   ContactShapeParams,
   ManifestEntry,
@@ -25,6 +25,7 @@ interface ProbeCanvasProps {
   entry: ManifestEntry;
   probeData: ProbeInterfaceFile;
   camera: ProbeViewerCamera;
+  maxZoom: number;
   showContactIds: boolean;
   showScaleBar: boolean;
   onViewCenterChange: (x: number | null, y: number | null) => void;
@@ -83,6 +84,7 @@ export const ProbeCanvas = forwardRef<HTMLCanvasElement, ProbeCanvasProps>(
       entry,
       probeData,
       camera,
+      maxZoom,
       showContactIds,
       showScaleBar,
       onViewCenterChange,
@@ -109,6 +111,36 @@ export const ProbeCanvas = forwardRef<HTMLCanvasElement, ProbeCanvasProps>(
 
   const geometry = useMemo(() => computeGeometrySummary(probeData), [probeData]);
   const probe = useMemo(() => probeData.probes?.[0], [probeData]);
+
+  // For uniform contact-id sizing: the widest id label (so one font fits the
+  // longest) and the smallest contact box in micrometers (so it fits every pad).
+  // These are zoom-independent, so they are computed once per probe.
+  const idLabelInfo = useMemo(() => {
+    const ids = probe?.contact_ids;
+    const positions = probe?.contact_positions;
+    if (!ids || !positions || positions.length === 0) return null;
+    const shapes = probe.contact_shapes ?? [];
+    const params = probe.contact_shape_params ?? [];
+    let widestLabel = "";
+    let minWidthUm = Infinity;
+    let minHeightUm = Infinity;
+    for (let i = 0; i < positions.length; i++) {
+      const label = String(ids[i] ?? i);
+      if (label.length > widestLabel.length) widestLabel = label;
+      const shape = shapes[i] ?? "";
+      const p = params[i] ?? {};
+      const widthUm = shape === "circle" ? 2 * (p.radius ?? 5) : p.width ?? 10;
+      const heightUm =
+        shape === "circle"
+          ? 2 * (p.radius ?? 5)
+          : shape === "rect"
+            ? p.height ?? 15
+            : p.width ?? 10;
+      if (widthUm < minWidthUm) minWidthUm = widthUm;
+      if (heightUm < minHeightUm) minHeightUm = heightUm;
+    }
+    return { widestLabel, minWidthUm, minHeightUm };
+  }, [probe]);
 
   // Calculate effective view center (use geometry center if null)
   const effectiveViewCenterX = centerX ?? geometry?.centerX ?? 0;
@@ -263,16 +295,28 @@ export const ProbeCanvas = forwardRef<HTMLCanvasElement, ProbeCanvasProps>(
       ctx.stroke();
     });
 
-    if (showContactIds && probe.contact_ids) {
+    if (showContactIds && probe.contact_ids && idLabelInfo) {
       const contactIds = probe.contact_ids;
-      ctx.font = `${Math.max(10, Math.min(14, 10 * (scale / 100)))}px "Inter", sans-serif`;
+      const { widestLabel, minWidthUm, minHeightUm } = idLabelInfo;
+      // One font for the whole probe: the size at which the widest id fits the
+      // smallest contact (by width and height). Text width scales linearly with
+      // font size, so measure the widest label once at a reference size and
+      // solve. Tracks zoom and real contact size; never overflows a pad.
+      const REF_FONT = 100;
+      ctx.font = `${REF_FONT}px "Inter", sans-serif`;
+      const widestWidthAtRef = Math.max(1, ctx.measureText(widestLabel).width);
+      const fontByWidth = (REF_FONT * minWidthUm * scale) / widestWidthAtRef;
+      const fontByHeight = minHeightUm * scale;
+      const fontPx = Math.min(fontByWidth, fontByHeight) * 0.85;
+
+      ctx.font = `${fontPx}px "Inter", sans-serif`;
       ctx.textAlign = "center";
-      ctx.textBaseline = "top";
+      ctx.textBaseline = "middle";
       ctx.fillStyle = "rgba(15, 23, 42, 0.95)";
       contactPositions.forEach((position, index) => {
         const [x, y] = projectPoint(position);
         // Show the probe's actual contact id, not the array index.
-        ctx.fillText(String(contactIds[index] ?? index), x, y + 4);
+        ctx.fillText(String(contactIds[index] ?? index), x, y);
       });
     }
 
@@ -343,11 +387,11 @@ export const ProbeCanvas = forwardRef<HTMLCanvasElement, ProbeCanvasProps>(
     if (showScaleBar) {
       renderScaleBar();
     }
-  }, [entry.id, effectiveViewCenterX, effectiveViewCenterY, geometry, probe, probeData, showContactIds, showScaleBar, size.height, size.width, zoom]);
+  }, [entry.id, effectiveViewCenterX, effectiveViewCenterY, geometry, idLabelInfo, probe, probeData, showContactIds, showScaleBar, size.height, size.width, zoom]);
 
   const clampZoom = useCallback(
-    (value: number) => Math.min(VIEW_ZOOM_MAX, Math.max(VIEW_ZOOM_MIN, value)),
-    [],
+    (value: number) => Math.min(maxZoom, Math.max(VIEW_ZOOM_MIN, value)),
+    [maxZoom],
   );
 
   // Helper to calculate scale (needed for coordinate conversion in handlers)
