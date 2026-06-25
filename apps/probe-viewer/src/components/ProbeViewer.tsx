@@ -136,6 +136,30 @@ const JsonIcon = (
   </svg>
 );
 
+// Leading icons for the view-toggle chips: an eye (show/hide contact IDs), an
+// I-beam matching the on-canvas scale bar, and a minimap frame for the overview.
+const EyeIcon = (
+  <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"/>
+    <circle cx="12" cy="12" r="3"/>
+  </svg>
+);
+
+const ScaleBarIcon = (
+  <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <line x1="3" y1="12" x2="21" y2="12"/>
+    <line x1="3" y1="8" x2="3" y2="16"/>
+    <line x1="21" y1="8" x2="21" y2="16"/>
+  </svg>
+);
+
+const MinimapIcon = (
+  <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <rect x="3" y="3" width="18" height="18" rx="2"/>
+    <rect x="13" y="13" width="6" height="6" rx="1"/>
+  </svg>
+);
+
 export function ProbeViewer() {
   const manifest = useAppStore((state) => state.manifest);
   const manifestStatus = useAppStore((state) => state.manifestStatus);
@@ -435,6 +459,7 @@ export function ProbeViewer() {
                 checked={view.showContactIds}
                 onChange={(event) => toggleContactIds(event.target.checked)}
               />
+              {EyeIcon}
               Show contact IDs
             </label>
           )}
@@ -444,6 +469,7 @@ export function ProbeViewer() {
               checked={view.showScaleBar}
               onChange={(event) => toggleScaleBar(event.target.checked)}
             />
+            {ScaleBarIcon}
             Scale bar
           </label>
           <label className="viewer-toggle">
@@ -452,6 +478,7 @@ export function ProbeViewer() {
               checked={view.showOverview}
               onChange={(event) => toggleOverview(event.target.checked)}
             />
+            {MinimapIcon}
             Overview
           </label>
         </section>

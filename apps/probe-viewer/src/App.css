@@ -418,10 +418,24 @@
   color: var(--accent-strong);
 }
 
+/* Keyboard focus ring on the chip, since the real checkbox is visually hidden. */
+.viewer-toggle:has(input:focus-visible) {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* The checkbox stays in the DOM (and keyboard-focusable) for accessibility, but
+   is visually hidden: the chip's pressed fill is what conveys on/off. */
 .viewer-toggle input {
-  accent-color: var(--accent);
-  margin: 0;
-  cursor: pointer;
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
 }
 
 .viewer-canvas {
