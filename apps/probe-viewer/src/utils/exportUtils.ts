@@ -347,53 +347,52 @@ function generateProbeSvgString(
 
   const elements: string[] = [];
 
-  // Probe contour
+  // Probe contour: technical line-art — a faint cool wash so the shank reads as
+  // a region, with a thin precise outline. No fill gradient or shadow.
   if (probe.probe_planar_contour && probe.probe_planar_contour.length > 1) {
     const points = probe.probe_planar_contour
       .map((p) => projectPoint(p).join(","))
       .join(" ");
-    const strokeWidth = Math.max(1.2, 2.5 * (scale / 100));
+    const strokeWidth = Math.max(1, Math.min(1.6, 2 * (scale / 120)));
     elements.push(
-      `<polygon points="${points}" fill="rgba(180, 185, 195, 0.7)" stroke="rgba(100, 105, 115, 0.95)" stroke-width="${strokeWidth}" stroke-linejoin="round"/>`
+      `<polygon points="${points}" fill="rgba(51, 65, 85, 0.05)" stroke="rgb(51, 65, 85)" stroke-opacity="0.9" stroke-width="${strokeWidth}" stroke-linejoin="round"/>`
     );
   }
 
   const contactPositions = probe.contact_positions ?? [];
   const contactShapes = probe.contact_shapes ?? [];
   const contactShapeParams = probe.contact_shape_params ?? [];
-  const shadowOffset = 0.4 * scale;  // 0.4 micrometer offset for subtle depth
-  const contactStrokeWidth = Math.max(1.2, 2.5 * (scale / 150));
 
-  // Helper to generate contact SVG element
+  // Helper to generate one contact SVG element: flat gold (the electrode
+  // convention) with a defined bronze outline, no gradient or shadow.
+  const contactStrokeWidth = Math.max(1, Math.min(1.8, 2.5 * (scale / 150)));
   const generateContactSvg = (
     x: number,
     y: number,
     shape: string,
-    params: ContactShapeParams,
-    isShadow: boolean
+    params: ContactShapeParams
   ): string => {
-    const fill = isShadow ? "rgba(30, 20, 5, 0.7)" : "rgba(212, 175, 55, 1.0)";
-    const stroke = isShadow ? "none" : "rgba(80, 60, 15, 0.9)";
-    const sw = isShadow ? 0 : contactStrokeWidth;
-
+    const common = `fill="rgb(212, 175, 55)" stroke="rgb(110, 80, 25)" stroke-opacity="0.9" stroke-width="${contactStrokeWidth}"`;
     switch (shape) {
       case "circle": {
         const radius = (params.radius ?? 5) * scale;
-        return `<circle cx="${x}" cy="${y}" r="${radius}" fill="${fill}" stroke="${stroke}" stroke-width="${sw}"/>`;
+        return `<circle cx="${x}" cy="${y}" r="${radius}" ${common}/>`;
       }
       case "square": {
         const side = (params.width ?? 10) * scale;
-        return `<rect x="${x - side / 2}" y="${y - side / 2}" width="${side}" height="${side}" fill="${fill}" stroke="${stroke}" stroke-width="${sw}"/>`;
+        const r = side * 0.12;
+        return `<rect x="${x - side / 2}" y="${y - side / 2}" width="${side}" height="${side}" rx="${r}" ry="${r}" ${common}/>`;
       }
       case "rect": {
         const w = (params.width ?? 10) * scale;
         const h = (params.height ?? 15) * scale;
-        return `<rect x="${x - w / 2}" y="${y - h / 2}" width="${w}" height="${h}" fill="${fill}" stroke="${stroke}" stroke-width="${sw}"/>`;
+        const r = Math.min(w, h) * 0.12;
+        return `<rect x="${x - w / 2}" y="${y - h / 2}" width="${w}" height="${h}" rx="${r}" ry="${r}" ${common}/>`;
       }
       default: {
-        // Unknown shape: small circle
+        // Unknown shape: a small plain gold dot.
         const markerSize = Math.max(3, Math.min(10, 7 * (scale / 100)));
-        return `<circle cx="${x}" cy="${y}" r="${markerSize * 0.4}" fill="${fill}" stroke="${stroke}" stroke-width="${sw}"/>`;
+        return `<circle cx="${x}" cy="${y}" r="${markerSize * 0.4}" ${common}/>`;
       }
     }
   };
@@ -404,31 +403,19 @@ function generateProbeSvgString(
     const size = Math.max((p.radius ?? 0) * 2, p.width ?? 0, p.height ?? 0);
     return Math.max(max, size);
   }, 10);
-  const frameMargin = maxContactSizeUm * scale + shadowOffset;
+  const frameMargin = maxContactSizeUm * scale + 4;
   const isContactInFrame = (x: number, y: number) =>
     x >= -frameMargin &&
     x <= widthPx + frameMargin &&
     y >= -frameMargin &&
     y <= heightPx + frameMargin;
 
-  // First pass: shadows
   contactPositions.forEach((position, index) => {
     const [x, y] = projectPoint(position);
     if (!isContactInFrame(x, y)) return;
     const shape = contactShapes[index] ?? "";
     const params = contactShapeParams[index] ?? {};
-    elements.push(
-      generateContactSvg(x + shadowOffset, y + shadowOffset, shape, params, true)
-    );
-  });
-
-  // Second pass: gold contacts
-  contactPositions.forEach((position, index) => {
-    const [x, y] = projectPoint(position);
-    if (!isContactInFrame(x, y)) return;
-    const shape = contactShapes[index] ?? "";
-    const params = contactShapeParams[index] ?? {};
-    elements.push(generateContactSvg(x, y, shape, params, false));
+    elements.push(generateContactSvg(x, y, shape, params));
   });
 
   // Scale bar (L-shaped, bottom-left corner)

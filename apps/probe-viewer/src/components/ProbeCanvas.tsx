@@ -207,46 +207,27 @@ export const ProbeCanvas = forwardRef<HTMLCanvasElement, ProbeCanvasProps>(
     if (probe.probe_planar_contour && probe.probe_planar_contour.length > 1) {
       ctx.beginPath();
       probe.probe_planar_contour.forEach((point, index) => {
-        const [x, y] = projectPoint(point);
+        const [px, py] = projectPoint(point);
         if (index === 0) {
-          ctx.moveTo(x, y);
+          ctx.moveTo(px, py);
         } else {
-          ctx.lineTo(x, y);
+          ctx.lineTo(px, py);
         }
       });
       ctx.closePath();
-      ctx.fillStyle = "rgba(180, 185, 195, 0.7)";  // Metallic silver
-      ctx.strokeStyle = "rgba(100, 105, 115, 0.95)";
-      ctx.lineWidth = Math.max(1.2, 2.5 * (scale / 100));
+
+      // Technical line-art: a faint cool wash so the shank reads as a region,
+      // with a thin precise outline. No fill gradient or shadow.
+      ctx.fillStyle = "rgba(51, 65, 85, 0.05)";
       ctx.fill();
+      ctx.strokeStyle = "rgba(51, 65, 85, 0.9)";
+      ctx.lineWidth = Math.max(1, Math.min(1.6, 2 * (scale / 120)));
       ctx.stroke();
     }
 
     const contactPositions = probe.contact_positions ?? [];
     const contactShapes = probe.contact_shapes ?? [];
     const contactShapeParams = probe.contact_shape_params ?? [];
-
-    // A contact's pixel dimensions, used both to size the metallic gradient and
-    // to skip the sheen on pads too small for it to register.
-    const contactDims = (shape: string, params: ContactShapeParams) => {
-      switch (shape) {
-        case "circle": {
-          const d = (params.radius ?? 5) * 2 * scale;
-          return { w: d, h: d, minPx: d, gradient: true };
-        }
-        case "square": {
-          const s = (params.width ?? 10) * scale;
-          return { w: s, h: s, minPx: s, gradient: true };
-        }
-        case "rect": {
-          const w = (params.width ?? 10) * scale;
-          const h = (params.height ?? 15) * scale;
-          return { w, h, minPx: Math.min(w, h), gradient: true };
-        }
-        default:
-          return { w: 0, h: 0, minPx: 0, gradient: false };
-      }
-    };
 
     // Draws one contact path centered on the current origin (callers translate
     // the context to the pad position first). Rectangular pads get lightly
@@ -263,7 +244,7 @@ export const ProbeCanvas = forwardRef<HTMLCanvasElement, ProbeCanvasProps>(
         case "rect": {
           const w = (params.width ?? 10) * scale;
           const h = (shape === "square" ? (params.width ?? 10) : (params.height ?? 15)) * scale;
-          const r = Math.min(w, h) * 0.18;
+          const r = Math.min(w, h) * 0.12;
           if (typeof ctx.roundRect === "function") {
             ctx.roundRect(-w / 2, -h / 2, w, h, r);
           } else {
@@ -283,54 +264,21 @@ export const ProbeCanvas = forwardRef<HTMLCanvasElement, ProbeCanvasProps>(
       }
     };
 
-    // One metallic gold gradient per distinct pad size per frame. Contacts are
-    // usually uniform, so this is built once and reused across all of them.
-    const gradientCache = new Map<string, CanvasGradient>();
-    const goldGradient = (w: number, h: number) => {
-      const key = `${Math.round(w)}x${Math.round(h)}`;
-      let g = gradientCache.get(key);
-      if (!g) {
-        g = ctx.createLinearGradient(-w / 2, -h / 2, w / 2, h / 2);
-        g.addColorStop(0, "rgba(248, 228, 156, 1)"); // warm highlight (top-left)
-        g.addColorStop(0.45, "rgba(212, 175, 55, 1)"); // gold body
-        g.addColorStop(1, "rgba(146, 108, 28, 1)"); // deep bronze (bottom-right)
-        gradientCache.set(key, g);
-      }
-      return g;
-    };
-
+    // Flat gold contacts (the recognizable electrode convention), with a defined
+    // bronze outline and no gradient or shadow — focal without the metallic
+    // shine that was pulling focus.
     contactPositions.forEach((position, index) => {
       const [x, y] = projectPoint(position);
       const shape = contactShapes[index] ?? "";
       const params = contactShapeParams[index] ?? {};
-      const dims = contactDims(shape, params);
 
       ctx.save();
       ctx.translate(x, y);
       drawContactShape(shape, params);
-
-      // Metallic sheen when the pad is big enough to show it; below that a flat
-      // gold that looks identical at that size but is cheaper.
-      ctx.fillStyle =
-        dims.gradient && dims.minPx >= 5
-          ? goldGradient(dims.w, dims.h)
-          : "rgba(212, 175, 55, 1)";
-
-      // A soft, capped shadow lifts the pad off the silver shank without the
-      // hard offset double-image the previous two-pass approach produced.
-      ctx.shadowColor = "rgba(15, 12, 4, 0.35)";
-      ctx.shadowBlur = Math.min(5, Math.max(1.5, dims.minPx * 0.12));
-      ctx.shadowOffsetX = 0;
-      ctx.shadowOffsetY = Math.min(2.5, Math.max(0.4, dims.minPx * 0.06));
+      ctx.fillStyle = "rgba(212, 175, 55, 1)";
       ctx.fill();
-
-      // Clear the shadow before the rim so the outline stays crisp.
-      ctx.shadowColor = "transparent";
-      ctx.shadowBlur = 0;
-      ctx.shadowOffsetY = 0;
-
-      ctx.lineWidth = Math.min(2, Math.max(0.8, dims.minPx * 0.03));
-      ctx.strokeStyle = "rgba(110, 80, 25, 0.85)";
+      ctx.lineWidth = Math.max(1, Math.min(1.8, 2.5 * (scale / 150)));
+      ctx.strokeStyle = "rgba(110, 80, 25, 0.9)";
       ctx.stroke();
       ctx.restore();
     });
