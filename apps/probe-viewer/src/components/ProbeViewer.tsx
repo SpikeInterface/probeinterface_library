@@ -362,58 +362,16 @@ export function ProbeViewer() {
         </div>
       </header>
 
-      <section className="viewer-controls">
-        <div className="viewer-controls-group">
-          <button
-            type="button"
-            onClick={() => setZoom(view.camera.zoom * 1.5)}
-            title="Zoom in"
-          >
-            {ZoomInIcon}
-          </button>
-          <button
-            type="button"
-            onClick={() => setZoom(view.camera.zoom / 1.5)}
-            title="Zoom out"
-          >
-            {ZoomOutIcon}
-          </button>
+      {status !== "error" && probeData && (
+        <section className="viewer-toolbar viewer-toolbar--top">
           <button type="button" onClick={() => resetView()} title="Show the whole probe outline">
             Full Probe View
           </button>
           <button type="button" onClick={fullContactsView} title="Zoom to fit just the contacts">
             Full Contacts View
           </button>
-        </div>
-        <div className="viewer-controls-group">
-          {hasContactIds && (
-            <label className="viewer-toggle">
-              <input
-                type="checkbox"
-                checked={view.showContactIds}
-                onChange={(event) => toggleContactIds(event.target.checked)}
-              />
-              Show contact IDs
-            </label>
-          )}
-          <label className="viewer-toggle">
-            <input
-              type="checkbox"
-              checked={view.showScaleBar}
-              onChange={(event) => toggleScaleBar(event.target.checked)}
-            />
-            Scale bar
-          </label>
-          <label className="viewer-toggle">
-            <input
-              type="checkbox"
-              checked={view.showOverview}
-              onChange={(event) => toggleOverview(event.target.checked)}
-            />
-            Overview
-          </label>
-        </div>
-      </section>
+        </section>
+      )}
 
       <section className="viewer-canvas" ref={canvasContainerRef}>
         {status === "error" && (
@@ -442,6 +400,23 @@ export function ProbeViewer() {
                 onViewCenterChange={(x, y) => setViewCenter(x, y)}
               />
             )}
+
+            <div className="canvas-controls canvas-controls--nav">
+              <button
+                type="button"
+                onClick={() => setZoom(view.camera.zoom * 1.5)}
+                title="Zoom in"
+              >
+                {ZoomInIcon}
+              </button>
+              <button
+                type="button"
+                onClick={() => setZoom(view.camera.zoom / 1.5)}
+                title="Zoom out"
+              >
+                {ZoomOutIcon}
+              </button>
+            </div>
           </>
         )}
         {status === "loading" && (
@@ -450,6 +425,37 @@ export function ProbeViewer() {
           </div>
         )}
       </section>
+
+      {status !== "error" && probeData && (
+        <section className="viewer-toolbar viewer-toolbar--bottom">
+          {hasContactIds && (
+            <label className="viewer-toggle">
+              <input
+                type="checkbox"
+                checked={view.showContactIds}
+                onChange={(event) => toggleContactIds(event.target.checked)}
+              />
+              Show contact IDs
+            </label>
+          )}
+          <label className="viewer-toggle">
+            <input
+              type="checkbox"
+              checked={view.showScaleBar}
+              onChange={(event) => toggleScaleBar(event.target.checked)}
+            />
+            Scale bar
+          </label>
+          <label className="viewer-toggle">
+            <input
+              type="checkbox"
+              checked={view.showOverview}
+              onChange={(event) => toggleOverview(event.target.checked)}
+            />
+            Overview
+          </label>
+        </section>
+      )}
 
       <div className="viewer-issue-link">
         <a
