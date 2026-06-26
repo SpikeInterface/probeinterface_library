@@ -13,7 +13,7 @@ import type {
 } from "react";
 
 import { useResizeObserver } from "../hooks/useResizeObserver";
-import { VIEW_ZOOM_MAX, VIEW_ZOOM_MIN } from "../state/useAppStore";
+import { VIEW_ZOOM_MIN } from "../state/useAppStore";
 import type {
   ContactShapeParams,
   ManifestEntry,
@@ -25,6 +25,7 @@ interface ProbeCanvasProps {
   entry: ManifestEntry;
   probeData: ProbeInterfaceFile;
   camera: ProbeViewerCamera;
+  maxZoom: number;
   showContactIds: boolean;
   showScaleBar: boolean;
   onViewCenterChange: (x: number | null, y: number | null) => void;
@@ -83,6 +84,7 @@ export const ProbeCanvas = forwardRef<HTMLCanvasElement, ProbeCanvasProps>(
       entry,
       probeData,
       camera,
+      maxZoom,
       showContactIds,
       showScaleBar,
       onViewCenterChange,
@@ -109,6 +111,36 @@ export const ProbeCanvas = forwardRef<HTMLCanvasElement, ProbeCanvasProps>(
 
   const geometry = useMemo(() => computeGeometrySummary(probeData), [probeData]);
   const probe = useMemo(() => probeData.probes?.[0], [probeData]);
+
+  // For uniform contact-id sizing: the widest id label (so one font fits the
+  // longest) and the smallest contact box in micrometers (so it fits every pad).
+  // These are zoom-independent, so they are computed once per probe.
+  const idLabelInfo = useMemo(() => {
+    const ids = probe?.contact_ids;
+    const positions = probe?.contact_positions;
+    if (!ids || !positions || positions.length === 0) return null;
+    const shapes = probe.contact_shapes ?? [];
+    const params = probe.contact_shape_params ?? [];
+    let widestLabel = "";
+    let minWidthUm = Infinity;
+    let minHeightUm = Infinity;
+    for (let i = 0; i < positions.length; i++) {
+      const label = String(ids[i] ?? i);
+      if (label.length > widestLabel.length) widestLabel = label;
+      const shape = shapes[i] ?? "";
+      const p = params[i] ?? {};
+      const widthUm = shape === "circle" ? 2 * (p.radius ?? 5) : p.width ?? 10;
+      const heightUm =
+        shape === "circle"
+          ? 2 * (p.radius ?? 5)
+          : shape === "rect"
+            ? p.height ?? 15
+            : p.width ?? 10;
+      if (widthUm < minWidthUm) minWidthUm = widthUm;
+      if (heightUm < minHeightUm) minHeightUm = heightUm;
+    }
+    return { widestLabel, minWidthUm, minHeightUm };
+  }, [probe]);
 
   // Calculate effective view center (use geometry center if null)
   const effectiveViewCenterX = centerX ?? geometry?.centerX ?? 0;
@@ -175,18 +207,21 @@ export const ProbeCanvas = forwardRef<HTMLCanvasElement, ProbeCanvasProps>(
     if (probe.probe_planar_contour && probe.probe_planar_contour.length > 1) {
       ctx.beginPath();
       probe.probe_planar_contour.forEach((point, index) => {
-        const [x, y] = projectPoint(point);
+        const [px, py] = projectPoint(point);
         if (index === 0) {
-          ctx.moveTo(x, y);
+          ctx.moveTo(px, py);
         } else {
-          ctx.lineTo(x, y);
+          ctx.lineTo(px, py);
         }
       });
       ctx.closePath();
-      ctx.fillStyle = "rgba(180, 185, 195, 0.7)";  // Metallic silver
-      ctx.strokeStyle = "rgba(100, 105, 115, 0.95)";
-      ctx.lineWidth = Math.max(1.2, 2.5 * (scale / 100));
+
+      // Technical line-art: a faint cool wash so the shank reads as a region,
+      // with a thin precise outline. No fill gradient or shadow.
+      ctx.fillStyle = "rgba(51, 65, 85, 0.05)";
       ctx.fill();
+      ctx.strokeStyle = "rgba(51, 65, 85, 0.9)";
+      ctx.lineWidth = Math.max(1, Math.min(1.6, 2 * (scale / 120)));
       ctx.stroke();
     }
 
@@ -194,85 +229,82 @@ export const ProbeCanvas = forwardRef<HTMLCanvasElement, ProbeCanvasProps>(
     const contactShapes = probe.contact_shapes ?? [];
     const contactShapeParams = probe.contact_shape_params ?? [];
 
-    // Helper to draw a contact shape
-    const drawContactShape = (
-      x: number,
-      y: number,
-      shape: string,
-      params: ContactShapeParams,
-    ) => {
+    // Draws one contact path centered on the current origin (callers translate
+    // the context to the pad position first). Rectangular pads get lightly
+    // rounded corners so they read as real electrode pads, not hard tiles.
+    const drawContactShape = (shape: string, params: ContactShapeParams) => {
       ctx.beginPath();
       switch (shape) {
         case "circle": {
           const radius = (params.radius ?? 5) * scale;
-          ctx.arc(x, y, radius, 0, Math.PI * 2);
+          ctx.arc(0, 0, radius, 0, Math.PI * 2);
           break;
         }
-        case "square": {
-          const side = (params.width ?? 10) * scale;
-          ctx.rect(x - side / 2, y - side / 2, side, side);
-          break;
-        }
+        case "square":
         case "rect": {
           const w = (params.width ?? 10) * scale;
-          const h = (params.height ?? 15) * scale;
-          ctx.rect(x - w / 2, y - h / 2, w, h);
+          const h = (shape === "square" ? (params.width ?? 10) : (params.height ?? 15)) * scale;
+          const r = Math.min(w, h) * 0.12;
+          if (typeof ctx.roundRect === "function") {
+            ctx.roundRect(-w / 2, -h / 2, w, h, r);
+          } else {
+            ctx.rect(-w / 2, -h / 2, w, h);
+          }
           break;
         }
         default: {
-          // Unknown/missing shape: draw a dot with X to indicate missing data
+          // Unknown/missing shape: a dot with an X to flag missing data.
           const markerSize = Math.max(3, Math.min(10, 7 * (scale / 100)));
-          // Draw small circle
-          ctx.arc(x, y, markerSize * 0.4, 0, Math.PI * 2);
-          ctx.closePath();
-          // Draw X through the center
-          ctx.moveTo(x - markerSize, y - markerSize);
-          ctx.lineTo(x + markerSize, y + markerSize);
-          ctx.moveTo(x + markerSize, y - markerSize);
-          ctx.lineTo(x - markerSize, y + markerSize);
+          ctx.arc(0, 0, markerSize * 0.4, 0, Math.PI * 2);
+          ctx.moveTo(-markerSize, -markerSize);
+          ctx.lineTo(markerSize, markerSize);
+          ctx.moveTo(markerSize, -markerSize);
+          ctx.lineTo(-markerSize, markerSize);
         }
       }
     };
 
-    // Shadow offset for depth effect - subtle, proportional to scale
-    const shadowOffset = 0.4 * scale;  // 0.4 micrometer offset for subtle depth
-
-    // First pass: draw shadows (offset dark shapes)
+    // Flat gold contacts (the recognizable electrode convention), with a defined
+    // bronze outline and no gradient or shadow — focal without the metallic
+    // shine that was pulling focus.
     contactPositions.forEach((position, index) => {
       const [x, y] = projectPoint(position);
       const shape = contactShapes[index] ?? "";
       const params = contactShapeParams[index] ?? {};
 
-      drawContactShape(x + shadowOffset, y + shadowOffset, shape, params);
-      ctx.fillStyle = "rgba(30, 20, 5, 0.7)";  // Even darker and more opaque
+      ctx.save();
+      ctx.translate(x, y);
+      drawContactShape(shape, params);
+      ctx.fillStyle = "rgba(212, 175, 55, 1)";
       ctx.fill();
-    });
-
-    // Second pass: draw gold contacts on top
-    contactPositions.forEach((position, index) => {
-      const [x, y] = projectPoint(position);
-      const shape = contactShapes[index] ?? "";
-      const params = contactShapeParams[index] ?? {};
-
-      drawContactShape(x, y, shape, params);
-
-      ctx.fillStyle = "rgba(212, 175, 55, 1.0)";  // Gold contacts - fully opaque to cover shadow
-      ctx.strokeStyle = "rgba(80, 60, 15, 0.9)";  // Dark bronze outline
-      ctx.lineWidth = Math.max(1.2, 2.5 * (scale / 150));
-      ctx.fill();
+      ctx.lineWidth = Math.max(1, Math.min(1.8, 2.5 * (scale / 150)));
+      ctx.strokeStyle = "rgba(110, 80, 25, 0.9)";
       ctx.stroke();
+      ctx.restore();
     });
 
-    if (showContactIds && probe.contact_ids) {
+    if (showContactIds && probe.contact_ids && idLabelInfo) {
       const contactIds = probe.contact_ids;
-      ctx.font = `${Math.max(10, Math.min(14, 10 * (scale / 100)))}px "Inter", sans-serif`;
+      const { widestLabel, minWidthUm, minHeightUm } = idLabelInfo;
+      // One font for the whole probe: the size at which the widest id fits the
+      // smallest contact (by width and height). Text width scales linearly with
+      // font size, so measure the widest label once at a reference size and
+      // solve. Tracks zoom and real contact size; never overflows a pad.
+      const REF_FONT = 100;
+      ctx.font = `${REF_FONT}px "Inter", sans-serif`;
+      const widestWidthAtRef = Math.max(1, ctx.measureText(widestLabel).width);
+      const fontByWidth = (REF_FONT * minWidthUm * scale) / widestWidthAtRef;
+      const fontByHeight = minHeightUm * scale;
+      const fontPx = Math.min(fontByWidth, fontByHeight) * 0.85;
+
+      ctx.font = `${fontPx}px "Inter", sans-serif`;
       ctx.textAlign = "center";
-      ctx.textBaseline = "top";
+      ctx.textBaseline = "middle";
       ctx.fillStyle = "rgba(15, 23, 42, 0.95)";
       contactPositions.forEach((position, index) => {
         const [x, y] = projectPoint(position);
         // Show the probe's actual contact id, not the array index.
-        ctx.fillText(String(contactIds[index] ?? index), x, y + 4);
+        ctx.fillText(String(contactIds[index] ?? index), x, y);
       });
     }
 
@@ -343,11 +375,11 @@ export const ProbeCanvas = forwardRef<HTMLCanvasElement, ProbeCanvasProps>(
     if (showScaleBar) {
       renderScaleBar();
     }
-  }, [entry.id, effectiveViewCenterX, effectiveViewCenterY, geometry, probe, probeData, showContactIds, showScaleBar, size.height, size.width, zoom]);
+  }, [entry.id, effectiveViewCenterX, effectiveViewCenterY, geometry, idLabelInfo, probe, probeData, showContactIds, showScaleBar, size.height, size.width, zoom]);
 
   const clampZoom = useCallback(
-    (value: number) => Math.min(VIEW_ZOOM_MAX, Math.max(VIEW_ZOOM_MIN, value)),
-    [],
+    (value: number) => Math.min(maxZoom, Math.max(VIEW_ZOOM_MIN, value)),
+    [maxZoom],
   );
 
   // Helper to calculate scale (needed for coordinate conversion in handlers)

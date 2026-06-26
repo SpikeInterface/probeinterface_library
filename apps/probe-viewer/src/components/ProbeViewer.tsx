@@ -1,10 +1,91 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 
 import { useResizeObserver } from "../hooks/useResizeObserver";
-import { useAppStore, VIEW_ZOOM_MAX, VIEW_ZOOM_MIN } from "../state/useAppStore";
+import { useAppStore } from "../state/useAppStore";
 import { exportProbeAsPng, exportProbeAsSvg } from "../utils/exportUtils";
+import type { ContactShapeParams, ProbeInterfaceProbe } from "../types/probe";
 import { ProbeCanvas } from "./ProbeCanvas";
 import { ProbeOverview } from "./ProbeOverview";
+
+const CANVAS_PADDING = 40;
+// How far past "the smallest contact exactly fills the viewport" the zoom cap
+// allows, so you can still pan around inside one contact. 2 = up to twice the
+// viewport.
+const ZOOM_HEADROOM = 2;
+
+function contactExtent(shape: string, params: ContactShapeParams): number {
+  if (shape === "circle") return 2 * (params.radius ?? 5);
+  if (shape === "square") return params.width ?? 10;
+  if (shape === "rect") return Math.max(params.width ?? 10, params.height ?? 15);
+  return 10;
+}
+
+interface CameraFit {
+  // Per-probe zoom ceiling (smallest contact ~fills the viewport).
+  maxZoom: number;
+  // Zoom + center that frame the contacts' bounding box (ignoring the contour).
+  contactsZoom: number;
+  contactsCenterX: number;
+  contactsCenterY: number;
+}
+
+// Derives the zoom cap and the "fit the contacts" camera from the probe geometry
+// and the current canvas size. Bounds for the cap and the full-probe scale use
+// contacts + contour; the contacts framing uses contacts only, which is what
+// makes a long shank (e.g. Neuropixels, contacts in a small band) frame usefully.
+function computeCameraFit(
+  probe: ProbeInterfaceProbe,
+  canvasWidth: number,
+  canvasHeight: number,
+): CameraFit | null {
+  const positions = probe.contact_positions ?? [];
+  if (positions.length === 0) return null;
+  const contour = probe.probe_planar_contour ?? [];
+
+  let cMinX = Infinity, cMaxX = -Infinity, cMinY = Infinity, cMaxY = -Infinity;
+  let fMinX = Infinity, fMaxX = -Infinity, fMinY = Infinity, fMaxY = -Infinity;
+  positions.forEach(([x, y]) => {
+    if (x < cMinX) cMinX = x;
+    if (x > cMaxX) cMaxX = x;
+    if (y < cMinY) cMinY = y;
+    if (y > cMaxY) cMaxY = y;
+  });
+  fMinX = cMinX; fMaxX = cMaxX; fMinY = cMinY; fMaxY = cMaxY;
+  contour.forEach(([x, y]) => {
+    if (x < fMinX) fMinX = x;
+    if (x > fMaxX) fMaxX = x;
+    if (y < fMinY) fMinY = y;
+    if (y > fMaxY) fMaxY = y;
+  });
+
+  const availW = Math.max(10, canvasWidth - CANVAS_PADDING * 2);
+  const availH = Math.max(10, canvasHeight - CANVAS_PADDING * 2);
+  const baseScale = Math.min(
+    availW / Math.max(10, fMaxX - fMinX),
+    availH / Math.max(10, fMaxY - fMinY),
+  );
+
+  const shapes = probe.contact_shapes ?? [];
+  const params = probe.contact_shape_params ?? [];
+  let smallest = Infinity;
+  positions.forEach((_, i) => {
+    smallest = Math.min(smallest, contactExtent(shapes[i] ?? "", params[i] ?? {}));
+  });
+  if (!Number.isFinite(smallest) || smallest <= 0) smallest = 10;
+
+  const contactsScale = Math.min(
+    availW / Math.max(10, cMaxX - cMinX),
+    availH / Math.max(10, cMaxY - cMinY),
+  );
+
+  return {
+    maxZoom: (ZOOM_HEADROOM * Math.min(availW, availH)) / smallest / baseScale,
+    contactsZoom: contactsScale / baseScale,
+    contactsCenterX: (cMinX + cMaxX) / 2,
+    contactsCenterY: (cMinY + cMaxY) / 2,
+  };
+}
 
 const ZoomInIcon = (
   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -39,11 +120,43 @@ const CheckIcon = (
   </svg>
 );
 
+const DownloadIcon = (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+    <polyline points="7 10 12 15 17 10"/>
+    <line x1="12" y1="15" x2="12" y2="3"/>
+  </svg>
+);
+
 // Curly-braces glyph, the de-facto standard symbol for JSON/code.
 const JsonIcon = (
   <svg aria-hidden="true" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <path d="M8 3H7a2 2 0 0 0-2 2v5a2 2 0 0 1-2 2 2 2 0 0 1 2 2v5c0 1.1.9 2 2 2h1"/>
     <path d="M16 3h1a2 2 0 0 1 2 2v5a2 2 0 0 0 2 2 2 2 0 0 0-2 2v5a2 2 0 0 1-2 2h-1"/>
+  </svg>
+);
+
+// Leading icons for the view-toggle chips: an eye (show/hide contact IDs), an
+// I-beam matching the on-canvas scale bar, and a minimap frame for the overview.
+const EyeIcon = (
+  <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"/>
+    <circle cx="12" cy="12" r="3"/>
+  </svg>
+);
+
+const ScaleBarIcon = (
+  <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <line x1="3" y1="12" x2="21" y2="12"/>
+    <line x1="3" y1="8" x2="3" y2="16"/>
+    <line x1="21" y1="8" x2="21" y2="16"/>
+  </svg>
+);
+
+const MinimapIcon = (
+  <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <rect x="3" y="3" width="18" height="18" rx="2"/>
+    <rect x="13" y="13" width="6" height="6" rx="1"/>
   </svg>
 );
 
@@ -57,6 +170,7 @@ export function ProbeViewer() {
   const probeStatus = useAppStore((state) => state.probeStatus);
   const view = useAppStore((state) => state.view);
   const setZoom = useAppStore((state) => state.setZoom);
+  const setMaxZoom = useAppStore((state) => state.setMaxZoom);
   const setViewCenter = useAppStore((state) => state.setViewCenter);
   const resetView = useAppStore((state) => state.resetView);
   const toggleContactIds = useAppStore((state) => state.toggleContactIds);
@@ -141,75 +255,51 @@ export function ProbeViewer() {
     }
   }, [selectedProbeId, resetView]);
 
-  // Smart initial zoom and pan for very tall probes (like Neuropixels)
-  // When probe geometry has extreme aspect ratio, zoom in so probe is ~1/3 of viewport width
-  // and pan to show the bottom (base) of the probe
-  const lastSmartZoomProbeId = useRef<string | undefined>(undefined);
+  // Frame the contacts (ignoring the probe outline) and center on them. Reused
+  // by the default-view effect and the "Full Contacts View" button.
+  const fullContactsView = useCallback(() => {
+    const probe = probeData?.probes?.[0];
+    if (!probe) return;
+    const fit = computeCameraFit(probe, canvasSize.width, canvasSize.height);
+    if (!fit) return;
+    setZoom(fit.contactsZoom);
+    setViewCenter(fit.contactsCenterX, fit.contactsCenterY);
+  }, [probeData, canvasSize.width, canvasSize.height, setZoom, setViewCenter]);
+
+  // Per-probe zoom cap. Recomputed on probe switch and on resize, since the cap
+  // ("smallest contact fills the viewport") is expressed in viewport pixels and
+  // must follow the canvas size. Declared before the default-view effect so the
+  // cap is committed before any zoom is applied (Zustand set is synchronous).
   useEffect(() => {
-    if (!probeData || !selectedProbeId) return;
-    if (lastSmartZoomProbeId.current === selectedProbeId) return;
-    // Wait for canvas size to be available
+    if (!probeData) return;
     if (canvasSize.width === 0 || canvasSize.height === 0) return;
-
-    // Get current view state directly from store (not stale closure value)
-    const currentCamera = useAppStore.getState().view.camera;
-    const hasUrlViewState = currentCamera.zoom !== 1 || currentCamera.centerX !== null || currentCamera.centerY !== null;
-    if (hasUrlViewState) {
-      lastSmartZoomProbeId.current = selectedProbeId;
-      return;
-    }
-
     const probe = probeData.probes?.[0];
     if (!probe) return;
+    const fit = computeCameraFit(probe, canvasSize.width, canvasSize.height);
+    if (fit) setMaxZoom(fit.maxZoom);
+  }, [probeData, canvasSize.width, canvasSize.height, setMaxZoom]);
 
-    const positions = probe.contact_positions ?? [];
-    const contour = probe.probe_planar_contour ?? [];
-    if (positions.length === 0) return;
+  // Default framing: every probe opens fitted to its contacts. The only
+  // exception is the very first probe of a session opened from a shared link
+  // whose URL carried a camera at load time (left for useRestoreCameraFromUrl).
+  // Basing this on the load-time URL, not the live camera, is what makes the
+  // contacts framing apply on every probe switch (the live camera is non-default
+  // after the first probe, which previously made later probes skip it).
+  const [searchParams] = useSearchParams();
+  const initialUrlHadCameraRef = useRef(searchParams.has("zoom"));
+  const lastDefaultViewProbeId = useRef<string | undefined>(undefined);
+  useEffect(() => {
+    if (!probeData || !selectedProbeId) return;
+    if (lastDefaultViewProbeId.current === selectedProbeId) return;
+    if (canvasSize.width === 0 || canvasSize.height === 0) return;
 
-    // Calculate geometry bounds
-    let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
-    const updateBounds = (point: number[]) => {
-      const [x, y] = point;
-      if (x < minX) minX = x;
-      if (x > maxX) maxX = x;
-      if (y < minY) minY = y;
-      if (y > maxY) maxY = y;
-    };
-    positions.forEach(updateBounds);
-    contour.forEach(updateBounds);
-
-    const width = Math.max(10, maxX - minX);
-    const height = Math.max(10, maxY - minY);
-    const centerX = minX + width / 2;
-    const aspectRatio = height / width;
-
-    const TALL_THRESHOLD = 10;
-    const TARGET_WIDTH_FRACTION = 1 / 3;
-
-    if (aspectRatio > TALL_THRESHOLD) {
-      // For very tall probes, start zoomed in
-      const initialZoom = aspectRatio * TARGET_WIDTH_FRACTION;
-      setZoom(initialZoom);
-
-      // Set view center to show the bottom (base) of the probe
-      // We want minY (probe base) to appear near bottom of viewport
-      // Calculate the Y coordinate that should be at screen center
-      const mainPadding = 40;
-      const mainAvailW = Math.max(10, canvasSize.width - mainPadding * 2);
-      const mainAvailH = Math.max(10, canvasSize.height - mainPadding * 2);
-      const mainBaseScale = Math.min(mainAvailW / width, mainAvailH / height);
-      const mainScale = mainBaseScale * initialZoom;
-
-      // How much of probe height fits in the viewport?
-      const viewportHeightInProbeUnits = (canvasSize.height - mainPadding * 2) / mainScale;
-      // Center the view so minY is near the bottom edge
-      const initialViewCenterY = minY + viewportHeightInProbeUnits / 2;
-
-      setViewCenter(centerX, initialViewCenterY);
+    const isFirstProbe = lastDefaultViewProbeId.current === undefined;
+    const respectSharedLink = isFirstProbe && initialUrlHadCameraRef.current;
+    if (!respectSharedLink) {
+      fullContactsView();
     }
-
-    lastSmartZoomProbeId.current = selectedProbeId;
-  }, [probeData, selectedProbeId, setZoom, setViewCenter, canvasSize.width, canvasSize.height]);
+    lastDefaultViewProbeId.current = selectedProbeId;
+  }, [probeData, selectedProbeId, canvasSize.width, canvasSize.height, fullContactsView]);
 
   if (manifestStatus === "loading") {
     return (
@@ -262,6 +352,7 @@ export function ProbeViewer() {
             onClick={handleExportPng}
             title="Export current view as PNG (white background). If scale bar is enabled, it will be included."
           >
+            {DownloadIcon}
             Export PNG
           </button>
           <button
@@ -270,32 +361,12 @@ export function ProbeViewer() {
             onClick={handleExportSvg}
             title="Export current view as SVG (transparent background). If scale bar is enabled, it will be included."
           >
+            {DownloadIcon}
             Export SVG
           </button>
-        </div>
-      </header>
-
-      <section className="viewer-controls">
-        <div className="viewer-controls-group">
           <button
             type="button"
-            onClick={() => setZoom(Math.min(view.camera.zoom * 1.5, VIEW_ZOOM_MAX))}
-            title="Zoom in"
-          >
-            {ZoomInIcon}
-          </button>
-          <button
-            type="button"
-            onClick={() => setZoom(Math.max(view.camera.zoom / 1.5, VIEW_ZOOM_MIN))}
-            title="Zoom out"
-          >
-            {ZoomOutIcon}
-          </button>
-          <button type="button" onClick={() => resetView()} title="Show full probe">
-            Full Probe View
-          </button>
-          <button
-            type="button"
+            className="viewer-download"
             onClick={handleShareView}
             title="Copy a link to the current view"
             aria-label="Copy a link to the current view"
@@ -303,45 +374,28 @@ export function ProbeViewer() {
             {shareCopied ? (
               <>
                 {CheckIcon}
-                Copied view to clipboard!
+                Link copied!
               </>
             ) : (
               <>
                 {ShareIcon}
-                Share View
+                Share Current View
               </>
             )}
           </button>
         </div>
-        <div className="viewer-controls-group">
-          {hasContactIds && (
-            <label className="viewer-toggle">
-              <input
-                type="checkbox"
-                checked={view.showContactIds}
-                onChange={(event) => toggleContactIds(event.target.checked)}
-              />
-              Show contact IDs
-            </label>
-          )}
-          <label className="viewer-toggle">
-            <input
-              type="checkbox"
-              checked={view.showScaleBar}
-              onChange={(event) => toggleScaleBar(event.target.checked)}
-            />
-            Scale bar
-          </label>
-          <label className="viewer-toggle">
-            <input
-              type="checkbox"
-              checked={view.showOverview}
-              onChange={(event) => toggleOverview(event.target.checked)}
-            />
-            Overview
-          </label>
-        </div>
-      </section>
+      </header>
+
+      {status !== "error" && probeData && (
+        <section className="viewer-toolbar viewer-toolbar--top">
+          <button type="button" onClick={() => resetView()} title="Show the whole probe outline">
+            Full Probe View
+          </button>
+          <button type="button" onClick={fullContactsView} title="Zoom to fit just the contacts">
+            Full Contacts View
+          </button>
+        </section>
+      )}
 
       <section className="viewer-canvas" ref={canvasContainerRef}>
         {status === "error" && (
@@ -355,6 +409,7 @@ export function ProbeViewer() {
               entry={entry}
               probeData={probeData}
               camera={view.camera}
+              maxZoom={view.maxZoom}
               showContactIds={view.showContactIds}
               showScaleBar={view.showScaleBar}
               onViewCenterChange={(x, y) => setViewCenter(x, y)}
@@ -369,6 +424,23 @@ export function ProbeViewer() {
                 onViewCenterChange={(x, y) => setViewCenter(x, y)}
               />
             )}
+
+            <div className="canvas-controls canvas-controls--nav">
+              <button
+                type="button"
+                onClick={() => setZoom(view.camera.zoom * 1.5)}
+                title="Zoom in"
+              >
+                {ZoomInIcon}
+              </button>
+              <button
+                type="button"
+                onClick={() => setZoom(view.camera.zoom / 1.5)}
+                title="Zoom out"
+              >
+                {ZoomOutIcon}
+              </button>
+            </div>
           </>
         )}
         {status === "loading" && (
@@ -377,6 +449,40 @@ export function ProbeViewer() {
           </div>
         )}
       </section>
+
+      {status !== "error" && probeData && (
+        <section className="viewer-toolbar viewer-toolbar--bottom">
+          {hasContactIds && (
+            <label className="viewer-toggle">
+              <input
+                type="checkbox"
+                checked={view.showContactIds}
+                onChange={(event) => toggleContactIds(event.target.checked)}
+              />
+              {EyeIcon}
+              Show contact IDs
+            </label>
+          )}
+          <label className="viewer-toggle">
+            <input
+              type="checkbox"
+              checked={view.showScaleBar}
+              onChange={(event) => toggleScaleBar(event.target.checked)}
+            />
+            {ScaleBarIcon}
+            Scale bar
+          </label>
+          <label className="viewer-toggle">
+            <input
+              type="checkbox"
+              checked={view.showOverview}
+              onChange={(event) => toggleOverview(event.target.checked)}
+            />
+            {MinimapIcon}
+            Overview
+          </label>
+        </section>
+      )}
 
       <div className="viewer-issue-link">
         <a
