@@ -1,20 +1,17 @@
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 
 import { useAppStore } from "./useAppStore";
 
-const DEFAULT_PROBE_ID = "plexon:8S1024";
-
 // Keeps the selected probe and the URL path (/probes/:manufacturer/:model) in
 // agreement:
 //
-//   select (path -> store)  on load / manifest change, picks the probe named in
-//                           the URL, falling back to a default
-//   sync   (store -> path)  navigates to match the selection when it changes
-//
-// Unlike the camera sync there is no shared flag: each effect carries its own
-// loop-breaker (select no-ops when the selection is already valid; sync skips
-// navigation when the path already matches), so the two cannot ping-pong.
+//   select (path -> store)  acts only when the route's probe actually changes,
+//                           so navigating away cannot re-add the probe we are
+//                           leaving; the bare "/" landing clears the selection
+//   sync   (store -> path)  navigates to match the selection when it changes,
+//                           reading the live selection so a same-commit clear
+//                           (e.g. the Home button) is respected
 export function useProbeRouteSync() {
   const { manufacturer, model } = useParams();
   const location = useLocation();
@@ -31,40 +28,52 @@ export function useProbeRouteSync() {
     return map;
   }, [manifest]);
 
-  // select: URL path -> store
+  // select: URL path -> store. Only react when the route's probe id actually
+  // changes (tracked via a ref). This is what prevents a bounce: during a
+  // navigation transient the route can briefly still name the old probe while
+  // the selection has been cleared, and without this guard the effect would
+  // re-select it. `null` is the "not yet run" sentinel; `undefined` is the
+  // landing route.
+  const lastRouteIdRef = useRef<string | undefined | null>(null);
   useEffect(() => {
-    if (manifestStatus !== "success" || manifest.length === 0) {
-      return;
-    }
+    if (manifestStatus !== "success" || manifest.length === 0) return;
 
     const routeId =
       manufacturer && model ? `${manufacturer}:${model}` : undefined;
-    const routeEntry = routeId ? manifestById.get(routeId) : undefined;
-    const currentSelected = selectedProbeId
-      ? manifestById.get(selectedProbeId)
-      : undefined;
+    if (routeId === lastRouteIdRef.current) return;
+    lastRouteIdRef.current = routeId;
 
-    const getDefaultProbe = () =>
-      manifestById.get(DEFAULT_PROBE_ID) ?? manifest[0];
-
-    if (selectedProbeId && !currentSelected) {
-      const fallback = routeEntry ?? getDefaultProbe();
-      if (fallback && fallback.id !== selectedProbeId) {
-        selectProbe(fallback.id);
-      }
+    if (!routeId) {
+      // Landed on the catalog: clear any selection so the sync effect does not
+      // pull us back into a probe view.
+      if (useAppStore.getState().selectedProbeId) selectProbe(undefined);
       return;
     }
 
-    if (!selectedProbeId) {
-      if (routeEntry) {
-        selectProbe(routeEntry.id);
-      } else {
-        const fallback = getDefaultProbe();
-        if (fallback) {
-          selectProbe(fallback.id);
-        }
-      }
+    const routeEntry = manifestById.get(routeId);
+    if (routeEntry && routeEntry.id !== useAppStore.getState().selectedProbeId) {
+      selectProbe(routeEntry.id);
     }
+  }, [manifestStatus, manifest, manifestById, manufacturer, model, selectProbe]);
+
+  // sync: store -> URL path.
+  useEffect(() => {
+    if (manifestStatus !== "success" || manifest.length === 0) return;
+
+    // Read the live selection: if the select effect cleared it in this same
+    // commit (landing), we must see that and not navigate back into a probe.
+    const liveSelected = useAppStore.getState().selectedProbeId;
+    if (!liveSelected) return;
+
+    const selectedEntry = manifestById.get(liveSelected);
+    if (!selectedEntry) return;
+
+    const routeId =
+      manufacturer && model ? `${manufacturer}:${model}` : undefined;
+    if (routeId === selectedEntry.id) return;
+
+    const targetPath = `/probes/${selectedEntry.manufacturer}/${selectedEntry.model}`;
+    navigate(targetPath, { replace: location.pathname === "/" });
   }, [
     manifestStatus,
     manifest,
@@ -72,41 +81,7 @@ export function useProbeRouteSync() {
     manufacturer,
     model,
     selectedProbeId,
-    selectProbe,
-  ]);
-
-  // sync: store -> URL path
-  useEffect(() => {
-    if (
-      manifestStatus !== "success" ||
-      !selectedProbeId ||
-      manifest.length === 0
-    ) {
-      return;
-    }
-
-    const selectedEntry = manifestById.get(selectedProbeId);
-    if (!selectedEntry) {
-      return;
-    }
-
-    const routeId =
-      manufacturer && model ? `${manufacturer}:${model}` : undefined;
-    if (routeId === selectedEntry.id) {
-      return;
-    }
-
-    const targetPath = `/probes/${selectedEntry.manufacturer}/${selectedEntry.model}`;
-    const replace = location.pathname === "/";
-    navigate(targetPath, { replace });
-  }, [
-    manifestStatus,
-    selectedProbeId,
-    manifestById,
-    manufacturer,
-    model,
     navigate,
     location.pathname,
-    manifest.length,
   ]);
 }

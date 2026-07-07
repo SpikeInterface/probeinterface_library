@@ -347,53 +347,58 @@ function generateProbeSvgString(
 
   const elements: string[] = [];
 
-  // Probe contour
+  // Round emitted coordinates to 2 decimals: sub-pixel precision is invisible
+  // but keeps the markup compact and readable.
+  const r2 = (n: number) => Math.round(n * 100) / 100;
+
+  // Probe contour: technical line-art — a faint cool wash so the shank reads as
+  // a region, with a thin precise outline. No fill gradient or shadow.
   if (probe.probe_planar_contour && probe.probe_planar_contour.length > 1) {
     const points = probe.probe_planar_contour
-      .map((p) => projectPoint(p).join(","))
+      .map((p) => {
+        const [px, py] = projectPoint(p);
+        return `${r2(px)},${r2(py)}`;
+      })
       .join(" ");
-    const strokeWidth = Math.max(1.2, 2.5 * (scale / 100));
+    const strokeWidth = r2(Math.max(1, Math.min(1.6, 2 * (scale / 120))));
     elements.push(
-      `<polygon points="${points}" fill="rgba(180, 185, 195, 0.7)" stroke="rgba(100, 105, 115, 0.95)" stroke-width="${strokeWidth}" stroke-linejoin="round"/>`
+      `<polygon points="${points}" fill="rgba(51, 65, 85, 0.05)" stroke="rgb(51, 65, 85)" stroke-opacity="0.9" stroke-width="${strokeWidth}" stroke-linejoin="round"/>`
     );
   }
 
   const contactPositions = probe.contact_positions ?? [];
   const contactShapes = probe.contact_shapes ?? [];
   const contactShapeParams = probe.contact_shape_params ?? [];
-  const shadowOffset = 0.4 * scale;  // 0.4 micrometer offset for subtle depth
-  const contactStrokeWidth = Math.max(1.2, 2.5 * (scale / 150));
 
-  // Helper to generate contact SVG element
+  // Helper to generate one contact's geometry. The flat-gold style (fill,
+  // bronze outline) is applied once on the wrapping <g>, not per element.
+  // Rectangular pads get lightly rounded corners.
   const generateContactSvg = (
     x: number,
     y: number,
     shape: string,
-    params: ContactShapeParams,
-    isShadow: boolean
+    params: ContactShapeParams
   ): string => {
-    const fill = isShadow ? "rgba(30, 20, 5, 0.7)" : "rgba(212, 175, 55, 1.0)";
-    const stroke = isShadow ? "none" : "rgba(80, 60, 15, 0.9)";
-    const sw = isShadow ? 0 : contactStrokeWidth;
-
     switch (shape) {
       case "circle": {
         const radius = (params.radius ?? 5) * scale;
-        return `<circle cx="${x}" cy="${y}" r="${radius}" fill="${fill}" stroke="${stroke}" stroke-width="${sw}"/>`;
+        return `<circle cx="${r2(x)}" cy="${r2(y)}" r="${r2(radius)}"/>`;
       }
       case "square": {
         const side = (params.width ?? 10) * scale;
-        return `<rect x="${x - side / 2}" y="${y - side / 2}" width="${side}" height="${side}" fill="${fill}" stroke="${stroke}" stroke-width="${sw}"/>`;
+        const rr = r2(side * 0.12);
+        return `<rect x="${r2(x - side / 2)}" y="${r2(y - side / 2)}" width="${r2(side)}" height="${r2(side)}" rx="${rr}" ry="${rr}"/>`;
       }
       case "rect": {
         const w = (params.width ?? 10) * scale;
         const h = (params.height ?? 15) * scale;
-        return `<rect x="${x - w / 2}" y="${y - h / 2}" width="${w}" height="${h}" fill="${fill}" stroke="${stroke}" stroke-width="${sw}"/>`;
+        const rr = r2(Math.min(w, h) * 0.12);
+        return `<rect x="${r2(x - w / 2)}" y="${r2(y - h / 2)}" width="${r2(w)}" height="${r2(h)}" rx="${rr}" ry="${rr}"/>`;
       }
       default: {
-        // Unknown shape: small circle
+        // Unknown shape: a small plain dot.
         const markerSize = Math.max(3, Math.min(10, 7 * (scale / 100)));
-        return `<circle cx="${x}" cy="${y}" r="${markerSize * 0.4}" fill="${fill}" stroke="${stroke}" stroke-width="${sw}"/>`;
+        return `<circle cx="${r2(x)}" cy="${r2(y)}" r="${r2(markerSize * 0.4)}"/>`;
       }
     }
   };
@@ -404,32 +409,28 @@ function generateProbeSvgString(
     const size = Math.max((p.radius ?? 0) * 2, p.width ?? 0, p.height ?? 0);
     return Math.max(max, size);
   }, 10);
-  const frameMargin = maxContactSizeUm * scale + shadowOffset;
+  const frameMargin = maxContactSizeUm * scale + 4;
   const isContactInFrame = (x: number, y: number) =>
     x >= -frameMargin &&
     x <= widthPx + frameMargin &&
     y >= -frameMargin &&
     y <= heightPx + frameMargin;
 
-  // First pass: shadows
+  // All contacts share one flat-gold style, set once on a group wrapper.
+  const contactEls: string[] = [];
   contactPositions.forEach((position, index) => {
     const [x, y] = projectPoint(position);
     if (!isContactInFrame(x, y)) return;
     const shape = contactShapes[index] ?? "";
     const params = contactShapeParams[index] ?? {};
+    contactEls.push(generateContactSvg(x, y, shape, params));
+  });
+  if (contactEls.length > 0) {
+    const contactStrokeWidth = r2(Math.max(1, Math.min(1.8, 2.5 * (scale / 150))));
     elements.push(
-      generateContactSvg(x + shadowOffset, y + shadowOffset, shape, params, true)
+      `<g fill="rgb(212, 175, 55)" stroke="rgb(110, 80, 25)" stroke-opacity="0.9" stroke-width="${contactStrokeWidth}">\n${contactEls.join("\n")}\n</g>`
     );
-  });
-
-  // Second pass: gold contacts
-  contactPositions.forEach((position, index) => {
-    const [x, y] = projectPoint(position);
-    if (!isContactInFrame(x, y)) return;
-    const shape = contactShapes[index] ?? "";
-    const params = contactShapeParams[index] ?? {};
-    elements.push(generateContactSvg(x, y, shape, params, false));
-  });
+  }
 
   // Scale bar (L-shaped, bottom-left corner)
   if (showScaleBar) {
@@ -447,26 +448,26 @@ function generateProbeSvgString(
     const tickSize = 4;
 
     const label = scaleBarUm >= 1000 ? `${scaleBarUm / 1000} mm` : `${scaleBarUm} μm`;
-    const strokeStyle = "rgba(15, 23, 42, 0.9)";
+    const col = "rgba(15, 23, 42, 0.9)";
+    const x0 = r2(cornerX);
+    const y0 = r2(cornerY);
+    const xEnd = r2(cornerX + scaleBarPixels);
+    const yTop = r2(cornerY - scaleBarPixels);
 
-    // L shape path
+    // L shape + end ticks, sharing one stroke style on a group.
     elements.push(
-      `<path d="M${cornerX},${cornerY} L${cornerX},${cornerY - scaleBarPixels} M${cornerX},${cornerY} L${cornerX + scaleBarPixels},${cornerY}" stroke="${strokeStyle}" stroke-width="2" stroke-linecap="square" fill="none"/>`
+      `<g stroke="${col}" stroke-width="2" fill="none">` +
+        `<path d="M${x0},${y0} L${x0},${yTop} M${x0},${y0} L${xEnd},${y0}" stroke-linecap="square"/>` +
+        `<path d="M${r2(cornerX - tickSize)},${yTop} L${r2(cornerX + tickSize)},${yTop} M${xEnd},${r2(cornerY - tickSize)} L${xEnd},${r2(cornerY + tickSize)}"/>` +
+        `</g>`
     );
 
-    // End ticks
+    // Both labels share one text style on a group.
     elements.push(
-      `<path d="M${cornerX - tickSize},${cornerY - scaleBarPixels} L${cornerX + tickSize},${cornerY - scaleBarPixels} M${cornerX + scaleBarPixels},${cornerY - tickSize} L${cornerX + scaleBarPixels},${cornerY + tickSize}" stroke="${strokeStyle}" stroke-width="2" fill="none"/>`
-    );
-
-    // X label (below horizontal arm)
-    elements.push(
-      `<text x="${cornerX + scaleBarPixels / 2}" y="${cornerY + 16}" text-anchor="middle" font-family="Inter, sans-serif" font-size="11" fill="${strokeStyle}">${label}</text>`
-    );
-
-    // Y label (rotated, to the left of vertical arm)
-    elements.push(
-      `<text x="${cornerX - 6}" y="${cornerY - scaleBarPixels / 2}" text-anchor="middle" font-family="Inter, sans-serif" font-size="11" fill="${strokeStyle}" transform="rotate(-90, ${cornerX - 6}, ${cornerY - scaleBarPixels / 2})">${label}</text>`
+      `<g fill="${col}" font-family="Inter, sans-serif" font-size="11" text-anchor="middle">` +
+        `<text x="${r2(cornerX + scaleBarPixels / 2)}" y="${r2(cornerY + 16)}">${label}</text>` +
+        `<text x="${r2(cornerX - 6)}" y="${r2(cornerY - scaleBarPixels / 2)}" transform="rotate(-90, ${r2(cornerX - 6)}, ${r2(cornerY - scaleBarPixels / 2)})">${label}</text>` +
+        `</g>`
     );
   }
 

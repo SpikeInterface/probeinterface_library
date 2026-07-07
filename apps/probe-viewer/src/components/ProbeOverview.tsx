@@ -121,8 +121,10 @@ export function ProbeOverview({
         else ctx.lineTo(x, y);
       });
       ctx.closePath();
-      ctx.fillStyle = "rgba(180, 185, 195, 0.8)";
-      ctx.strokeStyle = "rgba(100, 105, 115, 0.95)";
+      // Technical line-art: a faint cool wash with a thin outline, matching the
+      // main canvas.
+      ctx.fillStyle = "rgba(51, 65, 85, 0.06)";
+      ctx.strokeStyle = "rgba(51, 65, 85, 0.85)";
       ctx.lineWidth = 1;
       ctx.fill();
       ctx.stroke();
@@ -146,9 +148,9 @@ export function ProbeOverview({
     const viewRectX = (effectiveViewCenterX - geometry.centerX) * minimapScale + offsetX - viewRectWidth / 2;
     const viewRectY = -(effectiveViewCenterY - geometry.centerY) * minimapScale + offsetY - viewRectHeight / 2;
 
-    // Draw viewport rectangle
-    ctx.strokeStyle = "rgba(59, 130, 246, 0.9)"; // Blue
-    ctx.fillStyle = "rgba(59, 130, 246, 0.15)";
+    // Draw viewport rectangle (graphite accent, matching the monochrome chrome)
+    ctx.strokeStyle = "rgba(15, 23, 42, 0.85)";
+    ctx.fillStyle = "rgba(15, 23, 42, 0.08)";
     ctx.lineWidth = 2;
     ctx.fillRect(viewRectX, viewRectY, viewRectWidth, viewRectHeight);
     ctx.strokeRect(viewRectX, viewRectY, viewRectWidth, viewRectHeight);
@@ -192,7 +194,7 @@ export function ProbeOverview({
     ctx.fillText(label, barX + scaleBarPixels / 2, barY - 4);
 
     // Border around minimap
-    ctx.strokeStyle = "rgba(100, 105, 115, 0.5)";
+    ctx.strokeStyle = "rgba(51, 65, 85, 0.3)";
     ctx.lineWidth = 1;
     ctx.strokeRect(0.5, 0.5, MINIMAP_WIDTH - 1, MINIMAP_HEIGHT - 1);
 
