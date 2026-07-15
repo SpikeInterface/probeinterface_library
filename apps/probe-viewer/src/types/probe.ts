@@ -45,7 +45,11 @@ export interface ProbeInterfaceProbe {
   contact_shapes?: string[];  // "circle" | "square" | "rect"
   contact_shape_params?: ContactShapeParams[];
   contact_ids?: (string | number)[];
-  shank_ids?: number[];
+  shank_ids?: (string | number)[];
+  // Per-contact face of the shank, e.g. "front" / "back". Present on
+  // double-sided probes (Cambridge NeuroTech ASSY-325D-*), where front and back
+  // contacts share the same (x, y) position.
+  contact_sides?: string[];
   probe_planar_contour?: number[][];
 }
 
