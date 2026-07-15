@@ -31,6 +31,9 @@ interface UseProbeViewportArgs {
   geometry: ViewportGeometry | null;
   camera: ProbeViewerCamera;
   size: ViewportSize;
+  // Per-probe zoom ceiling (the geometry-derived cap so the smallest contact can
+  // fill the viewport). Defaults to the global VIEW_ZOOM_MAX when omitted.
+  maxZoom?: number;
   onViewCenterChange: (x: number | null, y: number | null) => void;
   onZoom: (zoom: number) => void;
 }
@@ -46,6 +49,7 @@ export function useProbeViewport({
   geometry,
   camera,
   size,
+  maxZoom,
   onViewCenterChange,
   onZoom,
 }: UseProbeViewportArgs) {
@@ -68,8 +72,8 @@ export function useProbeViewport({
   const effectiveViewCenterY = centerY ?? geometry?.centerY ?? 0;
 
   const clampZoom = useCallback(
-    (value: number) => Math.min(VIEW_ZOOM_MAX, Math.max(VIEW_ZOOM_MIN, value)),
-    [],
+    (value: number) => Math.min(maxZoom ?? VIEW_ZOOM_MAX, Math.max(VIEW_ZOOM_MIN, value)),
+    [maxZoom],
   );
 
   const getScale = useCallback(() => {

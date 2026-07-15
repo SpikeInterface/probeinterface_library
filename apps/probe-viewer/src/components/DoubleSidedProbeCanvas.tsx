@@ -2,7 +2,13 @@ import { useEffect, useMemo, useRef } from "react";
 
 import { useResizeObserver } from "../hooks/useResizeObserver";
 import { useProbeViewport } from "../hooks/useProbeViewport";
-import { CONTACT_COLORS, drawContactShape, renderScaleBar } from "../geometry/draw";
+import {
+  CONTACT_COLORS,
+  computeIdLabelInfo,
+  drawContactIds,
+  drawContactShape,
+  renderScaleBar,
+} from "../geometry/draw";
 import type { ManifestEntry, ProbeInterfaceFile, ProbeViewerCamera } from "../types/probe";
 
 interface DoubleSidedProbeCanvasProps {
@@ -66,6 +72,10 @@ export function DoubleSidedProbeCanvas({
     if (!probe) return null;
     return computeGeometry(probe.contact_positions ?? [], probe.probe_planar_contour ?? []);
   }, [probe]);
+
+  // Uniform contact-id sizing info (widest label + smallest pad in µm), shared
+  // with the single-sided canvas so labels track contact size the same way.
+  const labelInfo = useMemo(() => computeIdLabelInfo(probe), [probe]);
 
   const {
     canvasRef,
@@ -144,23 +154,23 @@ export function DoubleSidedProbeCanvas({
     });
 
     // Contact IDs make the isolated face a channel map (the point of the view).
-    if (probe.contact_ids) {
-      const contactIds = probe.contact_ids;
-      ctx.font = `${Math.max(10, Math.min(14, 10 * (scale / 100)))}px "Inter", sans-serif`;
-      ctx.textAlign = "center";
-      ctx.textBaseline = "top";
-      ctx.fillStyle = "rgba(15, 23, 42, 0.95)";
-      positions.forEach((position, index) => {
-        if ((sides[index] ?? "front") !== overlaySide) return;
-        const [x, y] = projectPoint(position);
-        ctx.fillText(String(contactIds[index] ?? index), x, y + 4);
+    // Same fit-to-contact sizing as the single-sided canvas, restricted to the
+    // face on screen so labels stay legible and never overflow their pads.
+    if (probe.contact_ids && labelInfo) {
+      drawContactIds(ctx, {
+        positions,
+        contactIds: probe.contact_ids,
+        labelInfo,
+        scale,
+        projectPoint,
+        shouldDraw: (index) => (sides[index] ?? "front") === overlaySide,
       });
     }
 
     if (showScaleBar) {
       renderScaleBar(ctx, scale, heightPx);
     }
-  }, [canvasRef, entry.id, geometry, getProjection, overlaySide, probe, showScaleBar, size.height, size.width, zoom, centerX, centerY]);
+  }, [canvasRef, entry.id, geometry, getProjection, labelInfo, overlaySide, probe, showScaleBar, size.height, size.width, zoom, centerX, centerY]);
 
   return (
     <div ref={containerRef} className="viewer-canvas-surface">
