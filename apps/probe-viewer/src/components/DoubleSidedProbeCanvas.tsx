@@ -2,7 +2,14 @@ import { useEffect, useMemo, useRef } from "react";
 
 import { useResizeObserver } from "../hooks/useResizeObserver";
 import { useProbeViewport } from "../hooks/useProbeViewport";
-import { CONTACT_COLORS, drawContactShape, renderScaleBar } from "../geometry/draw";
+import { computeGeometry } from "../geometry/viewport";
+import {
+  CONTACT_COLORS,
+  computeIdLabelInfo,
+  drawContactIds,
+  drawContactShape,
+  renderScaleBar,
+} from "../geometry/draw";
 import type { ManifestEntry, ProbeInterfaceFile, ProbeViewerCamera } from "../types/probe";
 
 interface DoubleSidedProbeCanvasProps {
@@ -14,34 +21,6 @@ interface DoubleSidedProbeCanvasProps {
   overlaySide: string;
   onViewCenterChange: (x: number | null, y: number | null) => void;
   onZoom: (zoom: number) => void;
-}
-
-interface GeometrySummary {
-  width: number;
-  height: number;
-  centerX: number;
-  centerY: number;
-}
-
-// Bounds over the raw contacts and contour (true positions — the overlay never
-// displaces a face, so framing is just the probe's own extent).
-function computeGeometry(positions: number[][], contour: number[][]): GeometrySummary | null {
-  let minX = Number.POSITIVE_INFINITY;
-  let minY = Number.POSITIVE_INFINITY;
-  let maxX = Number.NEGATIVE_INFINITY;
-  let maxY = Number.NEGATIVE_INFINITY;
-  const update = (point: number[]) => {
-    if (point[0] < minX) minX = point[0];
-    if (point[0] > maxX) maxX = point[0];
-    if (point[1] < minY) minY = point[1];
-    if (point[1] > maxY) maxY = point[1];
-  };
-  positions.forEach(update);
-  contour.forEach(update);
-  if (!Number.isFinite(minX)) return null;
-  const width = Math.max(10, maxX - minX);
-  const height = Math.max(10, maxY - minY);
-  return { width, height, centerX: minX + width / 2, centerY: minY + height / 2 };
 }
 
 function colorForSide(side: string | undefined) {
@@ -66,6 +45,10 @@ export function DoubleSidedProbeCanvas({
     if (!probe) return null;
     return computeGeometry(probe.contact_positions ?? [], probe.probe_planar_contour ?? []);
   }, [probe]);
+
+  // Uniform contact-id sizing info (widest label + smallest pad in µm), shared
+  // with the single-sided canvas so labels track contact size the same way.
+  const labelInfo = useMemo(() => computeIdLabelInfo(probe), [probe]);
 
   const {
     canvasRef,
@@ -144,23 +127,23 @@ export function DoubleSidedProbeCanvas({
     });
 
     // Contact IDs make the isolated face a channel map (the point of the view).
-    if (probe.contact_ids) {
-      const contactIds = probe.contact_ids;
-      ctx.font = `${Math.max(10, Math.min(14, 10 * (scale / 100)))}px "Inter", sans-serif`;
-      ctx.textAlign = "center";
-      ctx.textBaseline = "top";
-      ctx.fillStyle = "rgba(15, 23, 42, 0.95)";
-      positions.forEach((position, index) => {
-        if ((sides[index] ?? "front") !== overlaySide) return;
-        const [x, y] = projectPoint(position);
-        ctx.fillText(String(contactIds[index] ?? index), x, y + 4);
+    // Same fit-to-contact sizing as the single-sided canvas, restricted to the
+    // face on screen so labels stay legible and never overflow their pads.
+    if (probe.contact_ids && labelInfo) {
+      drawContactIds(ctx, {
+        positions,
+        contactIds: probe.contact_ids,
+        labelInfo,
+        scale,
+        projectPoint,
+        shouldDraw: (index) => (sides[index] ?? "front") === overlaySide,
       });
     }
 
     if (showScaleBar) {
       renderScaleBar(ctx, scale, heightPx);
     }
-  }, [canvasRef, entry.id, geometry, getProjection, overlaySide, probe, showScaleBar, size.height, size.width, zoom, centerX, centerY]);
+  }, [canvasRef, entry.id, geometry, getProjection, labelInfo, overlaySide, probe, showScaleBar, size.height, size.width, zoom, centerX, centerY]);
 
   return (
     <div ref={containerRef} className="viewer-canvas-surface">

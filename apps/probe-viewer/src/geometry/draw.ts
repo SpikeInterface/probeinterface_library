@@ -1,4 +1,4 @@
-import type { ContactShapeParams } from "../types/probe";
+import type { ContactShapeParams, ProbeInterfaceProbe } from "../types/probe";
 
 // Trace a single contact's outline onto the current path. Caller sets fill/stroke
 // and paints. Shared by the single-sided and double-sided canvases so the two
@@ -18,15 +18,17 @@ export function drawContactShape(
       ctx.arc(x, y, radius, 0, Math.PI * 2);
       break;
     }
-    case "square": {
-      const side = (params.width ?? 10) * scale;
-      ctx.rect(x - side / 2, y - side / 2, side, side);
-      break;
-    }
+    case "square":
     case "rect": {
       const w = (params.width ?? 10) * scale;
-      const h = (params.height ?? 15) * scale;
-      ctx.rect(x - w / 2, y - h / 2, w, h);
+      const h = (shape === "square" ? params.width ?? 10 : params.height ?? 15) * scale;
+      // Lightly rounded corners so pads read as electrodes, not hard tiles.
+      const r = Math.min(w, h) * 0.12;
+      if (typeof ctx.roundRect === "function") {
+        ctx.roundRect(x - w / 2, y - h / 2, w, h, r);
+      } else {
+        ctx.rect(x - w / 2, y - h / 2, w, h);
+      }
       break;
     }
     default: {
@@ -105,3 +107,81 @@ export const CONTACT_COLORS = {
   front: { fill: "rgba(212, 175, 55, 1.0)", stroke: "rgba(80, 60, 15, 0.9)" },
   back: { fill: "rgba(70, 130, 180, 1.0)", stroke: "rgba(25, 55, 90, 0.9)" },
 } as const;
+
+// Per-probe inputs for uniform contact-id sizing: the widest id label (so one
+// font fits the longest) and the smallest contact box in micrometers (so it
+// fits every pad). Zoom-independent, so a caller computes it once per probe.
+export interface IdLabelInfo {
+  widestLabel: string;
+  minWidthUm: number;
+  minHeightUm: number;
+}
+
+export function computeIdLabelInfo(
+  probe: ProbeInterfaceProbe | undefined,
+): IdLabelInfo | null {
+  const ids = probe?.contact_ids;
+  const positions = probe?.contact_positions;
+  if (!ids || !positions || positions.length === 0) return null;
+  const shapes = probe.contact_shapes ?? [];
+  const params = probe.contact_shape_params ?? [];
+  let widestLabel = "";
+  let minWidthUm = Infinity;
+  let minHeightUm = Infinity;
+  for (let i = 0; i < positions.length; i++) {
+    const label = String(ids[i] ?? i);
+    if (label.length > widestLabel.length) widestLabel = label;
+    const shape = shapes[i] ?? "";
+    const p = params[i] ?? {};
+    const widthUm = shape === "circle" ? 2 * (p.radius ?? 5) : p.width ?? 10;
+    const heightUm =
+      shape === "circle"
+        ? 2 * (p.radius ?? 5)
+        : shape === "rect"
+          ? p.height ?? 15
+          : p.width ?? 10;
+    if (widthUm < minWidthUm) minWidthUm = widthUm;
+    if (heightUm < minHeightUm) minHeightUm = heightUm;
+  }
+  return { widestLabel, minWidthUm, minHeightUm };
+}
+
+// Draw contact ids at a single per-probe font size: the size at which the widest
+// id fits the smallest contact (by width and height). Text width scales linearly
+// with font size, so we measure the widest label once at a reference size and
+// solve. The font tracks zoom and real contact size, so labels never overflow a
+// pad and stay a constant fraction of it — shared by both canvases so this holds
+// for single-sided and double-sided probes alike. `shouldDraw` lets the caller
+// restrict labels to one face (the double-sided overlay draws a single side).
+export function drawContactIds(
+  ctx: CanvasRenderingContext2D,
+  options: {
+    positions: number[][];
+    contactIds: (string | number)[];
+    labelInfo: IdLabelInfo;
+    scale: number;
+    projectPoint: (point: number[]) => [number, number];
+    shouldDraw?: (index: number) => boolean;
+  },
+): void {
+  const { positions, contactIds, labelInfo, scale, projectPoint, shouldDraw } = options;
+  const { widestLabel, minWidthUm, minHeightUm } = labelInfo;
+
+  const REF_FONT = 100;
+  ctx.font = `${REF_FONT}px "Inter", sans-serif`;
+  const widestWidthAtRef = Math.max(1, ctx.measureText(widestLabel).width);
+  const fontByWidth = (REF_FONT * minWidthUm * scale) / widestWidthAtRef;
+  const fontByHeight = minHeightUm * scale;
+  const fontPx = Math.min(fontByWidth, fontByHeight) * 0.85;
+
+  ctx.font = `${fontPx}px "Inter", sans-serif`;
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  ctx.fillStyle = "rgba(15, 23, 42, 0.95)";
+  positions.forEach((position, index) => {
+    if (shouldDraw && !shouldDraw(index)) return;
+    const [x, y] = projectPoint(position);
+    // Show the probe's actual contact id, not the array index.
+    ctx.fillText(String(contactIds[index] ?? index), x, y);
+  });
+}

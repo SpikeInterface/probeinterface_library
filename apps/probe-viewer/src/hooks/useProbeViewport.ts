@@ -3,39 +3,26 @@ import type { PointerEvent as ReactPointerEvent, MouseEvent as ReactMouseEvent }
 
 import { VIEW_ZOOM_MAX, VIEW_ZOOM_MIN } from "../state/useAppStore";
 import type { ProbeViewerCamera } from "../types/probe";
+import {
+  computeProjection,
+  computeScale,
+  type Projection,
+  type ViewportGeometry,
+  type ViewportSize,
+} from "../geometry/viewport";
 
-// The probe-space bounding box the viewport frames. Both the single-sided and
-// double-sided canvases compute one of these and hand it to the hook.
-export interface ViewportGeometry {
-  width: number;
-  height: number;
-  centerX: number;
-  centerY: number;
-}
-
-export interface ViewportSize {
-  width: number;
-  height: number;
-}
-
-// Projection from probe coordinates (micrometers, y-up) to canvas pixels
-// (y-down). `scale` is pixels per micrometer at the current zoom.
-export interface Projection {
-  scale: number;
-  offsetX: number;
-  offsetY: number;
-  projectPoint: (point: number[]) => [number, number];
-}
+export type { Projection, ViewportGeometry, ViewportSize };
 
 interface UseProbeViewportArgs {
   geometry: ViewportGeometry | null;
   camera: ProbeViewerCamera;
   size: ViewportSize;
+  // Per-probe zoom ceiling (the geometry-derived cap so the smallest contact can
+  // fill the viewport). Defaults to the global VIEW_ZOOM_MAX when omitted.
+  maxZoom?: number;
   onViewCenterChange: (x: number | null, y: number | null) => void;
   onZoom: (zoom: number) => void;
 }
-
-const PADDING = 40;
 
 // Camera + interaction logic shared by every probe canvas. This is a verbatim
 // extraction of the pan/zoom/projection math that used to live inside
@@ -46,6 +33,7 @@ export function useProbeViewport({
   geometry,
   camera,
   size,
+  maxZoom,
   onViewCenterChange,
   onZoom,
 }: UseProbeViewportArgs) {
@@ -68,36 +56,21 @@ export function useProbeViewport({
   const effectiveViewCenterY = centerY ?? geometry?.centerY ?? 0;
 
   const clampZoom = useCallback(
-    (value: number) => Math.min(VIEW_ZOOM_MAX, Math.max(VIEW_ZOOM_MIN, value)),
-    [],
+    (value: number) => Math.min(maxZoom ?? VIEW_ZOOM_MAX, Math.max(VIEW_ZOOM_MIN, value)),
+    [maxZoom],
   );
 
-  const getScale = useCallback(() => {
-    if (!size.width || !size.height || !geometry) return 1;
-    const availableWidth = Math.max(10, size.width - PADDING * 2);
-    const availableHeight = Math.max(10, size.height - PADDING * 2);
-    const baseScale = Math.min(
-      availableWidth / geometry.width,
-      availableHeight / geometry.height,
-    );
-    return baseScale * zoom;
-  }, [geometry, size.width, size.height, zoom]);
+  const getScale = useCallback(
+    () => computeScale(geometry, size, zoom),
+    [geometry, size, zoom],
+  );
 
   // Current projection from probe coordinates to canvas pixels. Recomputed on
   // demand so the draw effect always sees the live camera.
-  const getProjection = useCallback((): Projection | null => {
-    if (!geometry || !size.width || !size.height) return null;
-    const scale = getScale();
-    const panX = (geometry.centerX - effectiveViewCenterX) * scale;
-    const panY = (effectiveViewCenterY - geometry.centerY) * scale;
-    const offsetX = size.width / 2 + panX;
-    const offsetY = size.height / 2 + panY;
-    const projectPoint = (point: number[]): [number, number] => [
-      (point[0] - geometry.centerX) * scale + offsetX,
-      -(point[1] - geometry.centerY) * scale + offsetY,
-    ];
-    return { scale, offsetX, offsetY, projectPoint };
-  }, [geometry, size.width, size.height, getScale, effectiveViewCenterX, effectiveViewCenterY]);
+  const getProjection = useCallback(
+    (): Projection | null => computeProjection(geometry, camera, size),
+    [geometry, camera, size],
+  );
 
   // Wheel-to-zoom is attached as a NATIVE, non-passive listener (not React's
   // onWheel) so preventDefault() actually stops the page from scrolling. React
