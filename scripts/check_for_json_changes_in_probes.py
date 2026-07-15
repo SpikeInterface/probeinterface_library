@@ -1,5 +1,6 @@
 from argparse import ArgumentParser
 from pathlib import Path
+import json
 import shutil
 
 
@@ -37,13 +38,17 @@ if __name__ == "__main__":
         if old_probe_json_path.is_file():
             with open(temp_probe_json_path, 'r') as f1, open(old_probe_json_path, 'r') as f2:
                 # Read in json files
-                lines1 = f1.readlines()
-                lines2 = f2.readlines()
+                new_probe_dict = json.load(f1)
+                old_probe_dict = json.load(f2)
 
-            # We don't want to update the probes just because of a probeinterface version update.
-            # The probeinterface version is stored on the 3rd line of the json file, so we only
-            # compare the json files from line 3 and down.
-            if lines1[3:] == lines2[3:]:
+            # We don't want to update the probes just because of a probeinterface version update
+            # or because a `probe_ids` entry was added (both are introduced automatically by newer
+            # probeinterface versions), so we ignore those keys when comparing.
+            for probe_dict in (new_probe_dict, old_probe_dict):
+                probe_dict.pop("version", None)
+                probe_dict.pop("probe_ids", None)
+
+            if new_probe_dict == old_probe_dict:
                 continue
             else:
                 shutil.copy(f"{temp_probe_json_path}", old_dir / probe_name)
