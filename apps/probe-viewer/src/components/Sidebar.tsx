@@ -27,6 +27,17 @@ export function Sidebar() {
   const searchQuery = useAppStore((state) => state.searchQuery);
   const setSearchQuery = useAppStore((state) => state.setSearchQuery);
 
+  // Only manufacturers with at least one multi-sided probe show the "sides"
+  // count; when every probe of a manufacturer is single-sided the metric is
+  // noise, so it's omitted for all of that manufacturer's items.
+  const multiSideManufacturers = useMemo(() => {
+    const set = new Set<string>();
+    manifest.forEach((entry) => {
+      if (entry.numSides > 1) set.add(entry.manufacturer);
+    });
+    return set;
+  }, [manifest]);
+
   const manufacturers = useMemo(() => {
     const unique = new Set<string>();
     manifest.forEach((entry) => unique.add(entry.manufacturer));
@@ -111,6 +122,8 @@ export function Sidebar() {
       <span className="sidebar-item-name">{entry.displayName}</span>
       <span className="sidebar-item-meta">
         {entry.contactCount} contacts · {entry.shankCount} shanks
+        {multiSideManufacturers.has(entry.manufacturer) &&
+          ` · ${entry.numSides} ${entry.numSides === 1 ? "side" : "sides"}`}
       </span>
     </button>
   );

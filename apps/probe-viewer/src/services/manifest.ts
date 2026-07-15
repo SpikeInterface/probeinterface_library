@@ -11,6 +11,7 @@ function normalizeEntry(raw: RawManifestEntry): ManifestEntry {
   jsonUrl: `${import.meta.env.BASE_URL}${raw.json_url}`,
   contactCount: raw.contact_count,
   shankCount: raw.shank_count,
+  numSides: raw.num_sides,
   has3dGeometry: raw.has_3d_geometry,
   annotations: raw.annotations ?? {},
 };

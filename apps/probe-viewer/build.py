@@ -52,6 +52,7 @@ class ManifestEntry:
     json_url: str
     contact_count: int
     shank_count: int
+    num_sides: int
     has_3d_geometry: bool
     annotations: dict
 
@@ -74,12 +75,18 @@ def load_probe_metadata(json_path: Path) -> ManifestEntry:
     if not probes:
         raise ValueError(f"No probes found in {json_path}")
 
+    if len(probes) > 1:
+        raise ValueError(f"Multiple probes found in {json_path}; expected one")
+    probe = probes[0]
+
     manufacturer = json_path.parents[1].name
     model = json_path.parent.name
     probe_id = f"{manufacturer}:{model}"
 
-    total_contacts = sum(len(probe.get("contact_positions", [])) for probe in probes)
-    shank_count = max(len(set(probe.get("shank_ids") or [None])) for probe in probes)
+    total_contacts = len(probe.get("contact_positions", []))
+    shank_count = len(set(probe.get("shank_ids") or [None]))
+    num_sides = 1 if probe.get("contact_sides") is None else len(set(probe.get("contact_sides")))
+
     has_3d = any(probe.get("ndim") == 3 for probe in probes)
     annotations = probes[0].get("annotations") or {}
     display_name = annotations.get("model_name") or model
@@ -92,6 +99,7 @@ def load_probe_metadata(json_path: Path) -> ManifestEntry:
         json_url=json_path.name,
         contact_count=total_contacts,
         shank_count=shank_count,
+        num_sides=num_sides,
         has_3d_geometry=has_3d,
         annotations=annotations,
     )
