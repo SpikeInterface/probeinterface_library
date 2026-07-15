@@ -1,54 +1,10 @@
 import type { ProbeInterfaceFile, ContactShapeParams, ProbeViewerCamera } from "../types/probe";
+import { computeGeometry, computeProjection } from "../geometry/viewport";
+import { CONTACT_COLORS, drawContactShape, renderScaleBar } from "../geometry/draw";
 
 interface CanvasSize {
   width: number;
   height: number;
-}
-
-interface GeometrySummary {
-  minX: number;
-  maxX: number;
-  minY: number;
-  maxY: number;
-  width: number;
-  height: number;
-  centerX: number;
-  centerY: number;
-}
-
-function computeGeometrySummary(probeData: ProbeInterfaceFile): GeometrySummary | null {
-  const probe = probeData.probes?.[0];
-  if (!probe) {
-    return null;
-  }
-
-  const positions = probe.contact_positions ?? [];
-  if (positions.length === 0) {
-    return null;
-  }
-
-  let minX = Number.POSITIVE_INFINITY;
-  let minY = Number.POSITIVE_INFINITY;
-  let maxX = Number.NEGATIVE_INFINITY;
-  let maxY = Number.NEGATIVE_INFINITY;
-
-  const updateBounds = (point: number[]) => {
-    const [x, y] = point;
-    if (x < minX) minX = x;
-    if (x > maxX) maxX = x;
-    if (y < minY) minY = y;
-    if (y > maxY) maxY = y;
-  };
-
-  positions.forEach(updateBounds);
-  (probe.probe_planar_contour ?? []).forEach(updateBounds);
-
-  const width = Math.max(10, maxX - minX);
-  const height = Math.max(10, maxY - minY);
-  const centerX = minX + width / 2;
-  const centerY = minY + height / 2;
-
-  return { minX, maxX, minY, maxY, width, height, centerX, centerY };
 }
 
 /**
@@ -108,7 +64,10 @@ export function exportProbeAsSvg(
 
 /**
  * Render probe to a 2D canvas context (used for PNG export).
- * Mirrors the ProbeCanvas rendering logic but without contact IDs.
+ * Uses the same shared geometry/projection and draw primitives as the on-screen
+ * canvas, plus export-only touches: a white background (set by the caller), a
+ * drop-shadow depth pass, and an opaque contour so the shank reads in a
+ * standalone image. Contact IDs are intentionally omitted.
  */
 function renderProbeToContext(
   ctx: CanvasRenderingContext2D,
@@ -117,44 +76,23 @@ function renderProbeToContext(
   canvasSize: CanvasSize,
   showScaleBar: boolean
 ): void {
-  const geometry = computeGeometrySummary(probeData);
   const probe = probeData.probes?.[0];
-  if (!geometry || !probe) return;
-
-  const { zoom, centerX, centerY } = camera;
-  const { width: widthPx, height: heightPx } = canvasSize;
-
-  // Calculate effective view center (use geometry center if null)
-  const effectiveViewCenterX = centerX ?? geometry.centerX;
-  const effectiveViewCenterY = centerY ?? geometry.centerY;
-
-  const padding = 40;
-  const availableWidth = Math.max(10, widthPx - padding * 2);
-  const availableHeight = Math.max(10, heightPx - padding * 2);
-  const baseScale = Math.min(
-    availableWidth / geometry.width,
-    availableHeight / geometry.height
+  if (!probe) return;
+  const geometry = computeGeometry(
+    probe.contact_positions ?? [],
+    probe.probe_planar_contour ?? []
   );
-  const scale = baseScale * zoom;
+  const projection = computeProjection(geometry, camera, canvasSize);
+  if (!geometry || !projection) return;
 
-  // Calculate pixel pan from view center
-  const panX = (geometry.centerX - effectiveViewCenterX) * scale;
-  const panY = (effectiveViewCenterY - geometry.centerY) * scale;
-
-  const offsetX = widthPx / 2 + panX;
-  const offsetY = heightPx / 2 + panY;
-
-  const projectPoint = (point: number[]) => {
-    const [x, y] = point;
-    const normX = (x - geometry.centerX) * scale + offsetX;
-    const normY = -(y - geometry.centerY) * scale + offsetY;
-    return [normX, normY];
-  };
+  const { scale, projectPoint } = projection;
+  const { height: heightPx } = canvasSize;
 
   ctx.lineCap = "round";
   ctx.lineJoin = "round";
 
-  // Draw probe contour
+  // Probe contour: opaque gray so the shank reads as a region in a standalone
+  // image (the on-screen view uses a fainter wash over the app background).
   if (probe.probe_planar_contour && probe.probe_planar_contour.length > 1) {
     ctx.beginPath();
     probe.probe_planar_contour.forEach((point, index) => {
@@ -177,122 +115,43 @@ function renderProbeToContext(
   const contactShapes = probe.contact_shapes ?? [];
   const contactShapeParams = probe.contact_shape_params ?? [];
 
-  const drawContactShape = (
-    x: number,
-    y: number,
-    shape: string,
-    params: ContactShapeParams
-  ) => {
-    ctx.beginPath();
-    switch (shape) {
-      case "circle": {
-        const radius = (params.radius ?? 5) * scale;
-        ctx.arc(x, y, radius, 0, Math.PI * 2);
-        break;
-      }
-      case "square": {
-        const side = (params.width ?? 10) * scale;
-        ctx.rect(x - side / 2, y - side / 2, side, side);
-        break;
-      }
-      case "rect": {
-        const w = (params.width ?? 10) * scale;
-        const h = (params.height ?? 15) * scale;
-        ctx.rect(x - w / 2, y - h / 2, w, h);
-        break;
-      }
-      default: {
-        const markerSize = Math.max(3, Math.min(10, 7 * (scale / 100)));
-        ctx.arc(x, y, markerSize * 0.4, 0, Math.PI * 2);
-        ctx.closePath();
-        ctx.moveTo(x - markerSize, y - markerSize);
-        ctx.lineTo(x + markerSize, y + markerSize);
-        ctx.moveTo(x + markerSize, y - markerSize);
-        ctx.lineTo(x - markerSize, y + markerSize);
-      }
-    }
-  };
-
-  // Shadow offset for depth effect - subtle, proportional to scale
-  const shadowOffset = 0.4 * scale;  // 0.4 micrometer offset for subtle depth
-
-  // First pass: draw shadows
+  // First pass: drop shadows for a subtle depth effect (export only).
+  const shadowOffset = 0.4 * scale; // 0.4 micrometer offset
+  ctx.fillStyle = "rgba(30, 20, 5, 0.7)";
   contactPositions.forEach((position, index) => {
     const [x, y] = projectPoint(position);
-    const shape = contactShapes[index] ?? "";
-    const params = contactShapeParams[index] ?? {};
-
-    drawContactShape(x + shadowOffset, y + shadowOffset, shape, params);
-    ctx.fillStyle = "rgba(30, 20, 5, 0.7)";
-    ctx.fill();
-  });
-
-  // Second pass: draw gold contacts
-  contactPositions.forEach((position, index) => {
-    const [x, y] = projectPoint(position);
-    const shape = contactShapes[index] ?? "";
-    const params = contactShapeParams[index] ?? {};
-
-    drawContactShape(x, y, shape, params);
-
-    ctx.fillStyle = "rgba(212, 175, 55, 1.0)";  // Fully opaque to cover shadow
-    ctx.strokeStyle = "rgba(80, 60, 15, 0.9)";
-    ctx.lineWidth = Math.max(1.2, 2.5 * (scale / 150));
-    ctx.fill();
-    ctx.stroke();
-  });
-
-  // Scale bar (L-shaped, bottom-left corner)
-  if (showScaleBar) {
-    const niceNumbers = [1, 2, 5, 10, 25, 50, 100, 250, 500, 1000, 2500, 5000];
-    const targetPixels = 80;
-    const targetUm = targetPixels / scale;
-    const scaleBarUm = niceNumbers.reduce((prev, curr) =>
-      Math.abs(curr - targetUm) < Math.abs(prev - targetUm) ? curr : prev
+    drawContactShape(
+      ctx,
+      x + shadowOffset,
+      y + shadowOffset,
+      contactShapes[index] ?? "",
+      contactShapeParams[index] ?? {},
+      scale
     );
-    const scaleBarPixels = scaleBarUm * scale;
+    ctx.fill();
+  });
 
-    const margin = 20;
-    const cornerX = margin;
-    const cornerY = heightPx - margin;
-    const tickSize = 4;
-
-    ctx.strokeStyle = "rgba(15, 23, 42, 0.9)";
-    ctx.lineWidth = 2;
-    ctx.lineCap = "square";
-
-    // Draw L shape
-    ctx.beginPath();
-    ctx.moveTo(cornerX, cornerY);
-    ctx.lineTo(cornerX, cornerY - scaleBarPixels);
-    ctx.moveTo(cornerX, cornerY);
-    ctx.lineTo(cornerX + scaleBarPixels, cornerY);
+  // Second pass: flat gold contacts (fully opaque to cover the shadow), the same
+  // front-face style as the on-screen canvas.
+  ctx.fillStyle = CONTACT_COLORS.front.fill;
+  ctx.strokeStyle = CONTACT_COLORS.front.stroke;
+  ctx.lineWidth = Math.max(1.2, 2.5 * (scale / 150));
+  contactPositions.forEach((position, index) => {
+    const [x, y] = projectPoint(position);
+    drawContactShape(
+      ctx,
+      x,
+      y,
+      contactShapes[index] ?? "",
+      contactShapeParams[index] ?? {},
+      scale
+    );
+    ctx.fill();
     ctx.stroke();
+  });
 
-    // End ticks
-    ctx.beginPath();
-    ctx.moveTo(cornerX - tickSize, cornerY - scaleBarPixels);
-    ctx.lineTo(cornerX + tickSize, cornerY - scaleBarPixels);
-    ctx.moveTo(cornerX + scaleBarPixels, cornerY - tickSize);
-    ctx.lineTo(cornerX + scaleBarPixels, cornerY + tickSize);
-    ctx.stroke();
-
-    // Labels
-    const label = scaleBarUm >= 1000 ? `${scaleBarUm / 1000} mm` : `${scaleBarUm} μm`;
-    ctx.font = '11px "Inter", sans-serif';
-    ctx.fillStyle = "rgba(15, 23, 42, 0.9)";
-
-    ctx.textAlign = "center";
-    ctx.textBaseline = "top";
-    ctx.fillText(label, cornerX + scaleBarPixels / 2, cornerY + 5);
-
-    ctx.save();
-    ctx.translate(cornerX - 6, cornerY - scaleBarPixels / 2);
-    ctx.rotate(-Math.PI / 2);
-    ctx.textAlign = "center";
-    ctx.textBaseline = "bottom";
-    ctx.fillText(label, 0, 0);
-    ctx.restore();
+  if (showScaleBar) {
+    renderScaleBar(ctx, scale, heightPx);
   }
 }
 
@@ -301,6 +160,10 @@ function renderProbeToContext(
  * Transparent background, no contact IDs. Scale bar included if enabled.
  * Contacts outside the current frame are omitted, so the export matches what is
  * on screen and stays small even when zoomed into a long probe.
+ *
+ * Shares the geometry and projection math with the canvas, but the shapes and
+ * scale bar are emitted as SVG markup (not canvas calls), so that part cannot
+ * reuse the canvas draw primitives.
  */
 function generateProbeSvgString(
   probeData: ProbeInterfaceFile,
@@ -308,42 +171,19 @@ function generateProbeSvgString(
   canvasSize: CanvasSize,
   showScaleBar: boolean
 ): string {
-  const geometry = computeGeometrySummary(probeData);
   const probe = probeData.probes?.[0];
+  const geometry = computeGeometry(
+    probe?.contact_positions ?? [],
+    probe?.probe_planar_contour ?? []
+  );
+  const projection = computeProjection(geometry, camera, canvasSize);
 
-  if (!geometry || !probe) {
-    return `<svg xmlns="http://www.w3.org/2000/svg" width="${canvasSize.width}" height="${canvasSize.height}"></svg>`;
+  const { width: widthPx, height: heightPx } = canvasSize;
+  if (!geometry || !projection || !probe) {
+    return `<svg xmlns="http://www.w3.org/2000/svg" width="${widthPx}" height="${heightPx}"></svg>`;
   }
 
-  const { zoom, centerX, centerY } = camera;
-  const { width: widthPx, height: heightPx } = canvasSize;
-
-  // Calculate effective view center (use geometry center if null)
-  const effectiveViewCenterX = centerX ?? geometry.centerX;
-  const effectiveViewCenterY = centerY ?? geometry.centerY;
-
-  const padding = 40;
-  const availableWidth = Math.max(10, widthPx - padding * 2);
-  const availableHeight = Math.max(10, heightPx - padding * 2);
-  const baseScale = Math.min(
-    availableWidth / geometry.width,
-    availableHeight / geometry.height
-  );
-  const scale = baseScale * zoom;
-
-  // Calculate pixel pan from view center
-  const panX = (geometry.centerX - effectiveViewCenterX) * scale;
-  const panY = (effectiveViewCenterY - geometry.centerY) * scale;
-
-  const offsetX = widthPx / 2 + panX;
-  const offsetY = heightPx / 2 + panY;
-
-  const projectPoint = (point: number[]): [number, number] => {
-    const [x, y] = point;
-    const normX = (x - geometry.centerX) * scale + offsetX;
-    const normY = -(y - geometry.centerY) * scale + offsetY;
-    return [normX, normY];
-  };
+  const { scale, projectPoint } = projection;
 
   const elements: string[] = [];
 

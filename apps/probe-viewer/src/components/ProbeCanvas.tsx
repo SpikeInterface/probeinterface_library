@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef } from "react";
 
 import { useResizeObserver } from "../hooks/useResizeObserver";
 import { useProbeViewport } from "../hooks/useProbeViewport";
+import { computeGeometry } from "../geometry/viewport";
 import {
   CONTACT_COLORS,
   computeIdLabelInfo,
@@ -24,37 +25,6 @@ interface ProbeCanvasProps {
   showScaleBar: boolean;
   onViewCenterChange: (x: number | null, y: number | null) => void;
   onZoom: (zoom: number) => void;
-}
-
-interface GeometrySummary {
-  width: number;
-  height: number;
-  centerX: number;
-  centerY: number;
-}
-
-// Bounds over the contacts and contour (true positions frame the probe).
-function computeGeometry(
-  positions: number[][],
-  contour: number[][],
-): GeometrySummary | null {
-  if (positions.length === 0) return null;
-  let minX = Number.POSITIVE_INFINITY;
-  let minY = Number.POSITIVE_INFINITY;
-  let maxX = Number.NEGATIVE_INFINITY;
-  let maxY = Number.NEGATIVE_INFINITY;
-  const update = (point: number[]) => {
-    if (point[0] < minX) minX = point[0];
-    if (point[0] > maxX) maxX = point[0];
-    if (point[1] < minY) minY = point[1];
-    if (point[1] > maxY) maxY = point[1];
-  };
-  positions.forEach(update);
-  contour.forEach(update);
-  if (!Number.isFinite(minX)) return null;
-  const width = Math.max(10, maxX - minX);
-  const height = Math.max(10, maxY - minY);
-  return { width, height, centerX: minX + width / 2, centerY: minY + height / 2 };
 }
 
 export function ProbeCanvas({
