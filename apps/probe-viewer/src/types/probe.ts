@@ -6,6 +6,7 @@ export interface RawManifestEntry {
   json_url: string;
   contact_count: number;
   shank_count: number;
+  num_sides: number;
   has_3d_geometry: boolean;
   annotations: Record<string, unknown>;
 }
@@ -18,6 +19,7 @@ export interface ManifestEntry {
   jsonUrl: string;
   contactCount: number;
   shankCount: number;
+  numSides: number;
   has3dGeometry: boolean;
   annotations: Record<string, unknown>;
 }

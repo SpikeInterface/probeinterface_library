@@ -31,6 +31,9 @@ interface AppState {
   selectedManufacturer?: string;
   selectedProbeId?: string;
   searchQuery: string;
+  // Filter the list to probes with this many sides; null = show all. Only
+  // meaningful for manufacturers whose catalog mixes side counts.
+  sideFilter: number | null;
   probeCache: Record<string, ProbeInterfaceFile>;
   probeStatus: Record<string, ProbeLoadState>;
   view: ViewState;
@@ -42,6 +45,7 @@ interface AppState {
   loadManifest: () => Promise<void>;
   selectManufacturer: (manufacturer?: string) => void;
   setSearchQuery: (query: string) => void;
+  setSideFilter: (sides: number | null) => void;
   selectProbe: (probeId?: string) => void;
   ensureProbeLoaded: (probeId: string) => Promise<ProbeInterfaceFile | undefined>;
   setZoom: (zoom: number) => void;
@@ -88,6 +92,7 @@ export const useAppStore = create<AppState>((set, get) => ({
   selectedManufacturer: undefined,
   selectedProbeId: undefined,
   searchQuery: "",
+  sideFilter: null,
   probeCache: {},
   probeStatus: {},
   view: INITIAL_VIEW_STATE,
@@ -121,9 +126,14 @@ export const useAppStore = create<AppState>((set, get) => ({
     }
   },
 
-  selectManufacturer: (manufacturer) => set({ selectedManufacturer: manufacturer }),
+  // Switching manufacturer clears the side filter — it's specific to whichever
+  // catalog was showing and rarely applies to the next one.
+  selectManufacturer: (manufacturer) =>
+    set({ selectedManufacturer: manufacturer, sideFilter: null }),
 
   setSearchQuery: (query) => set({ searchQuery: query }),
+
+  setSideFilter: (sides) => set({ sideFilter: sides }),
 
   selectProbe: (probeId) =>
     set((state) => {

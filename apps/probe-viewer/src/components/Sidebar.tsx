@@ -26,6 +26,19 @@ export function Sidebar() {
   const navigate = useNavigate();
   const searchQuery = useAppStore((state) => state.searchQuery);
   const setSearchQuery = useAppStore((state) => state.setSearchQuery);
+  const sideFilter = useAppStore((state) => state.sideFilter);
+  const setSideFilter = useAppStore((state) => state.setSideFilter);
+
+  // Only manufacturers with at least one multi-sided probe show the "sides"
+  // count; when every probe of a manufacturer is single-sided the metric is
+  // noise, so it's omitted for all of that manufacturer's items.
+  const multiSideManufacturers = useMemo(() => {
+    const set = new Set<string>();
+    manifest.forEach((entry) => {
+      if (entry.numSides > 1) set.add(entry.manufacturer);
+    });
+    return set;
+  }, [manifest]);
 
   const manufacturers = useMemo(() => {
     const unique = new Set<string>();
@@ -41,10 +54,28 @@ export function Sidebar() {
     }
   }, [manufacturers, selectedManufacturer, selectManufacturer]);
 
+  // Distinct side counts among the selected manufacturer's probes. The side
+  // dropdown only appears when this has more than one value (e.g. a catalog
+  // mixing single- and double-sided probes).
+  const availableSideCounts = useMemo(() => {
+    const counts = new Set<number>();
+    manifest.forEach((entry) => {
+      if (!selectedManufacturer || entry.manufacturer === selectedManufacturer) {
+        counts.add(entry.numSides);
+      }
+    });
+    return Array.from(counts.values()).sort((a, b) => a - b);
+  }, [manifest, selectedManufacturer]);
+
+  const showSideFilter = availableSideCounts.length > 1;
+
   const filteredEntries = useMemo(() => {
     const query = searchQuery.trim().toLowerCase();
     return manifest.filter((entry) => {
       if (selectedManufacturer && entry.manufacturer !== selectedManufacturer) {
+        return false;
+      }
+      if (sideFilter !== null && entry.numSides !== sideFilter) {
         return false;
       }
       if (!query) {
@@ -55,7 +86,7 @@ export function Sidebar() {
         entry.displayName.toLowerCase().includes(query)
       );
     });
-  }, [manifest, selectedManufacturer, searchQuery]);
+  }, [manifest, selectedManufacturer, searchQuery, sideFilter]);
 
   useEffect(() => {
     // Re-pick a probe only when a stale one is selected (e.g. after switching
@@ -111,6 +142,8 @@ export function Sidebar() {
       <span className="sidebar-item-name">{entry.displayName}</span>
       <span className="sidebar-item-meta">
         {entry.contactCount} contacts · {entry.shankCount} shanks
+        {multiSideManufacturers.has(entry.manufacturer) &&
+          ` · ${entry.numSides} ${entry.numSides === 1 ? "side" : "sides"}`}
       </span>
     </button>
   );
@@ -225,6 +258,31 @@ export function Sidebar() {
           disabled={manifestStatus !== "success"}
         />
       </div>
+
+      {showSideFilter && (
+        <div className="sidebar-control">
+          <label className="sidebar-label" htmlFor="side-select">
+            Number of sides
+          </label>
+          <select
+            id="side-select"
+            value={sideFilter === null ? "" : String(sideFilter)}
+            onChange={(event) =>
+              setSideFilter(
+                event.target.value === "" ? null : Number(event.target.value),
+              )
+            }
+            disabled={manifestStatus !== "success"}
+          >
+            <option value="">All sides</option>
+            {availableSideCounts.map((count) => (
+              <option key={count} value={String(count)}>
+                {count} {count === 1 ? "side" : "sides"}
+              </option>
+            ))}
+          </select>
+        </div>
+      )}
 
       <div className="sidebar-list" role="list">
         {manifestStatus === "loading" && (
