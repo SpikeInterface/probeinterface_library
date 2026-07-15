@@ -4,8 +4,10 @@ import { useSearchParams } from "react-router-dom";
 import { useResizeObserver } from "../hooks/useResizeObserver";
 import { useAppStore } from "../state/useAppStore";
 import { exportProbeAsPng, exportProbeAsSvg } from "../utils/exportUtils";
+import { getSideInfo } from "../geometry/sides";
 import type { ContactShapeParams, ProbeInterfaceProbe } from "../types/probe";
 import { ProbeCanvas } from "./ProbeCanvas";
+import { DoubleSidedProbeCanvas } from "./DoubleSidedProbeCanvas";
 import { ProbeOverview } from "./ProbeOverview";
 
 const CANVAS_PADDING = 40;
@@ -176,6 +178,7 @@ export function ProbeViewer() {
   const toggleContactIds = useAppStore((state) => state.toggleContactIds);
   const toggleScaleBar = useAppStore((state) => state.toggleScaleBar);
   const toggleOverview = useAppStore((state) => state.toggleOverview);
+  const setOverlaySide = useAppStore((state) => state.setOverlaySide);
 
   useEffect(() => {
     if (selectedProbeId) {
@@ -199,6 +202,27 @@ export function ProbeViewer() {
 
   // Only offer the "Show contact IDs" toggle when the probe actually carries them.
   const hasContactIds = !!probeData?.probes?.[0]?.contact_ids?.length;
+
+  // Double-sided probes (front + back contacts at the same positions) get a
+  // dedicated canvas and a layout control; single-sided probes are unaffected.
+  const sideInfo = useMemo(
+    () => getSideInfo(probeData?.probes?.[0]),
+    [probeData],
+  );
+  const isDoubleSided = sideInfo.isDoubleSided;
+  // Fall back to the probe's first side if the stored selection is not one of
+  // this probe's sides (e.g. a stale value from a previous probe).
+  const activeSide = sideInfo.sides.includes(view.overlaySide)
+    ? view.overlaySide
+    : sideInfo.sides[0];
+  // Per-side contact counts, for the "double-sided" badge.
+  const sideCounts = useMemo(() => {
+    const counts: Record<string, number> = {};
+    for (const side of probeData?.probes?.[0]?.contact_sides ?? []) {
+      counts[side] = (counts[side] ?? 0) + 1;
+    }
+    return counts;
+  }, [probeData]);
 
   // Track canvas container size for minimap
   const { ref: canvasContainerRef, size: canvasSize } = useResizeObserver<HTMLDivElement>();
@@ -394,6 +418,28 @@ export function ProbeViewer() {
           <button type="button" onClick={fullContactsView} title="Zoom to fit just the contacts">
             Full Contacts View
           </button>
+          {isDoubleSided && (
+            <div className="viewer-controls-sides">
+              <span className="viewer-controls-label">
+                Double-sided ·{" "}
+                {sideInfo.sides.map((side) => `${sideCounts[side] ?? 0} ${side}`).join(" / ")}
+              </span>
+              <div className="viewer-segmented" role="group" aria-label="Which face to show">
+                {sideInfo.sides.map((side) => (
+                  <button
+                    key={side}
+                    type="button"
+                    className={activeSide === side ? "is-active" : ""}
+                    onClick={() => setOverlaySide(side)}
+                    title={`Show the ${side} face channel map`}
+                  >
+                    <span className={`viewer-side-swatch viewer-side-swatch--${side}`} />
+                    {side}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
         </section>
       )}
 
@@ -405,16 +451,28 @@ export function ProbeViewer() {
         )}
         {status !== "error" && probeData && (
           <>
-            <ProbeCanvas
-              entry={entry}
-              probeData={probeData}
-              camera={view.camera}
-              maxZoom={view.maxZoom}
-              showContactIds={view.showContactIds}
-              showScaleBar={view.showScaleBar}
-              onViewCenterChange={(x, y) => setViewCenter(x, y)}
-              onZoom={(value) => setZoom(value)}
-            />
+            {isDoubleSided ? (
+              <DoubleSidedProbeCanvas
+                entry={entry}
+                probeData={probeData}
+                camera={view.camera}
+                showScaleBar={view.showScaleBar}
+                overlaySide={activeSide}
+                onViewCenterChange={(x, y) => setViewCenter(x, y)}
+                onZoom={(value) => setZoom(value)}
+              />
+            ) : (
+              <ProbeCanvas
+                entry={entry}
+                probeData={probeData}
+                camera={view.camera}
+                maxZoom={view.maxZoom}
+                showContactIds={view.showContactIds}
+                showScaleBar={view.showScaleBar}
+                onViewCenterChange={(x, y) => setViewCenter(x, y)}
+                onZoom={(value) => setZoom(value)}
+              />
+            )}
             {view.showOverview && (
               <ProbeOverview
                 probeData={probeData}

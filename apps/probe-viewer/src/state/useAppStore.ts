@@ -16,6 +16,9 @@ interface ViewState {
   showContactIds: boolean;
   showScaleBar: boolean;
   showOverview: boolean;
+  // Double-sided probes: which face to show as a channel map. A side name
+  // ("front"/"back"); resolved against the probe's actual sides at render time.
+  overlaySide: string;
   // Per-probe zoom ceiling, computed from geometry so the smallest contact can
   // fill the viewport regardless of probe length (see setMaxZoom callers).
   maxZoom: number;
@@ -49,6 +52,7 @@ interface AppState {
   toggleContactIds: (value?: boolean) => void;
   toggleScaleBar: (value?: boolean) => void;
   toggleOverview: (value?: boolean) => void;
+  setOverlaySide: (side: string) => void;
 }
 
 export const VIEW_ZOOM_MIN = 0.1;
@@ -68,6 +72,8 @@ const INITIAL_VIEW_STATE: ViewState = {
   showContactIds: false,
   showScaleBar: true,
   showOverview: true,
+  // Default to the front face; resolved to the probe's first side if absent.
+  overlaySide: "front",
   maxZoom: VIEW_ZOOM_MAX,
 };
 
@@ -225,6 +231,7 @@ export const useAppStore = create<AppState>((set, get) => ({
       view: {
         ...INITIAL_VIEW_STATE,
         showContactIds: state.view.showContactIds,
+        overlaySide: state.view.overlaySide,
         // The cap is a property of the probe, not the camera; keep it across a reset.
         maxZoom: state.view.maxZoom,
       },
@@ -256,6 +263,9 @@ export const useAppStore = create<AppState>((set, get) => ({
           value !== undefined ? value : !state.view.showOverview,
       },
     })),
+
+  setOverlaySide: (side) =>
+    set((state) => ({ view: { ...state.view, overlaySide: side } })),
 }));
 
 export type { AppState, LoadStatus, ManifestEntry, ProbeInterfaceFile };
