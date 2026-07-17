@@ -24,6 +24,8 @@ An interactive web-based visualization tool for browsing microelectrode probe de
    - Read the probe JSON files from the manufacturer folders in this repository
    - Generate `public/probes-manifest.json` with metadata for all probes
    - Copy probe JSON files to `public/data/`
+   - Download the ProbeInterface JSON schema to `public/probe.schema.json`, used to
+     validate probe files a user loads from their own computer
    - Start the Vite dev server
 
 2. **Access the app:**
@@ -78,6 +80,7 @@ apps/probe-viewer/
 │   └── hooks/           # Custom React hooks
 ├── public/
 │   ├── probes-manifest.json  # Generated probe catalog
+│   ├── probe.schema.json     # Downloaded ProbeInterface schema
 │   └── data/                 # Generated probe JSON files
 └── index.html
 ```

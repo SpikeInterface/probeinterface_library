@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useLocation, useSearchParams } from "react-router-dom";
 
 import { useResizeObserver } from "../hooks/useResizeObserver";
 import { useAppStore } from "../state/useAppStore";
@@ -8,6 +8,7 @@ import { getSideInfo } from "../geometry/sides";
 import type { ContactShapeParams, ProbeInterfaceProbe } from "../types/probe";
 import { ProbeCanvas } from "./ProbeCanvas";
 import { DoubleSidedProbeCanvas } from "./DoubleSidedProbeCanvas";
+import { LocalProbePanel } from "./LocalProbePanel";
 import { ProbeOverview } from "./ProbeOverview";
 
 const CANVAS_PADDING = 40;
@@ -170,6 +171,7 @@ export function ProbeViewer() {
   const ensureProbeLoaded = useAppStore((state) => state.ensureProbeLoaded);
   const probeCache = useAppStore((state) => state.probeCache);
   const probeStatus = useAppStore((state) => state.probeStatus);
+  const localProbe = useAppStore((state) => state.localProbe);
   const view = useAppStore((state) => state.view);
   const setZoom = useAppStore((state) => state.setZoom);
   const setMaxZoom = useAppStore((state) => state.setMaxZoom);
@@ -180,16 +182,24 @@ export function ProbeViewer() {
   const toggleOverview = useAppStore((state) => state.toggleOverview);
   const setOverlaySide = useAppStore((state) => state.setOverlaySide);
 
+  const isLocalRoute = useLocation().pathname === "/local";
+
   useEffect(() => {
     if (selectedProbeId) {
       void ensureProbeLoaded(selectedProbeId);
     }
   }, [selectedProbeId, ensureProbeLoaded]);
 
+  // The "active" probe is the manifest selection when there is one, otherwise a
+  // locally loaded file (rendered at /local). Downstream code uses these two
+  // regardless of source; only the header affordances branch on isLocalProbe.
   const entry = useMemo(
-    () => manifest.find((item) => item.id === selectedProbeId),
-    [manifest, selectedProbeId],
+    () => manifest.find((item) => item.id === selectedProbeId) ?? localProbe?.entry,
+    [manifest, selectedProbeId, localProbe],
   );
+  const isLocalProbe = !!localProbe && entry === localProbe.entry;
+  // Stable identity for the framing/reset effects, spanning both sources.
+  const activeKey = selectedProbeId ?? localProbe?.entry.id;
 
   const status = selectedProbeId
     ? probeStatus[selectedProbeId]?.status ?? "idle"
@@ -198,7 +208,9 @@ export function ProbeViewer() {
     ? probeStatus[selectedProbeId]?.error
     : manifestError;
 
-  const probeData = selectedProbeId ? probeCache[selectedProbeId] : undefined;
+  const probeData = selectedProbeId
+    ? probeCache[selectedProbeId]
+    : localProbe?.file;
 
   // Only offer the "Show contact IDs" toggle when the probe actually carries them.
   const hasContactIds = !!probeData?.probes?.[0]?.contact_ids?.length;
@@ -263,7 +275,7 @@ export function ProbeViewer() {
   const lastResetProbeId = useRef<string | undefined>(undefined);
 
   useEffect(() => {
-    if (selectedProbeId && lastResetProbeId.current !== selectedProbeId) {
+    if (activeKey && lastResetProbeId.current !== activeKey) {
       // Get current view state directly from store (not stale closure value)
       // This is critical because App.tsx's URL effect may have updated the store
       // after this component rendered but before this effect runs
@@ -272,12 +284,12 @@ export function ProbeViewer() {
       if (!hasUrlViewState) {
         resetView();
       }
-      lastResetProbeId.current = selectedProbeId;
+      lastResetProbeId.current = activeKey;
     }
-    if (!selectedProbeId) {
+    if (!activeKey) {
       lastResetProbeId.current = undefined;
     }
-  }, [selectedProbeId, resetView]);
+  }, [activeKey, resetView]);
 
   // Frame the contacts (ignoring the probe outline) and center on them. Reused
   // by the default-view effect and the "Full Contacts View" button.
@@ -313,8 +325,8 @@ export function ProbeViewer() {
   const initialUrlHadCameraRef = useRef(searchParams.has("zoom"));
   const lastDefaultViewProbeId = useRef<string | undefined>(undefined);
   useEffect(() => {
-    if (!probeData || !selectedProbeId) return;
-    if (lastDefaultViewProbeId.current === selectedProbeId) return;
+    if (!probeData || !activeKey) return;
+    if (lastDefaultViewProbeId.current === activeKey) return;
     if (canvasSize.width === 0 || canvasSize.height === 0) return;
 
     const isFirstProbe = lastDefaultViewProbeId.current === undefined;
@@ -322,8 +334,8 @@ export function ProbeViewer() {
     if (!respectSharedLink) {
       fullContactsView();
     }
-    lastDefaultViewProbeId.current = selectedProbeId;
-  }, [probeData, selectedProbeId, canvasSize.width, canvasSize.height, fullContactsView]);
+    lastDefaultViewProbeId.current = activeKey;
+  }, [probeData, activeKey, canvasSize.width, canvasSize.height, fullContactsView]);
 
   if (manifestStatus === "loading") {
     return (
@@ -337,6 +349,16 @@ export function ProbeViewer() {
     return (
       <div className="viewer-placeholder viewer-placeholder--error">
         <p>{statusMessage ?? "Unable to load catalog."}</p>
+      </div>
+    );
+  }
+
+  // /local with nothing to show: either a rejected file (the panel reports the
+  // schema errors) or a cold visit, since local bytes cannot survive a reload.
+  if (!entry && isLocalRoute) {
+    return (
+      <div className="viewer-panel viewer-panel--empty">
+        <LocalProbePanel />
       </div>
     );
   }
@@ -356,17 +378,24 @@ export function ProbeViewer() {
           <h2 className="viewer-title">{entry.displayName}</h2>
           <p className="viewer-subtitle">
             {entry.manufacturer} · {entry.contactCount} contacts ·{" "}
-            {entry.shankCount} shanks ·{" "}
-            <a
-              className="viewer-json-link"
-              href={`https://github.com/SpikeInterface/probeinterface_library/blob/main/${entry.manufacturer}/${entry.model}/${entry.model}.json`}
-              target="_blank"
-              rel="noreferrer"
-              title="View this probe's JSON on GitHub"
-            >
-              {JsonIcon}
-              <span className="viewer-json-link-text">JSON</span>
-            </a>
+            {entry.shankCount} shanks
+            {/* A locally loaded probe has no GitHub source to link to. */}
+            {!isLocalProbe && (
+              <>
+                {" "}
+                ·{" "}
+                <a
+                  className="viewer-json-link"
+                  href={`https://github.com/SpikeInterface/probeinterface_library/blob/main/${entry.manufacturer}/${entry.model}/${entry.model}.json`}
+                  target="_blank"
+                  rel="noreferrer"
+                  title="View this probe's JSON on GitHub"
+                >
+                  {JsonIcon}
+                  <span className="viewer-json-link-text">JSON</span>
+                </a>
+              </>
+            )}
           </p>
         </div>
         <div className="viewer-header-actions">
@@ -388,25 +417,28 @@ export function ProbeViewer() {
             {DownloadIcon}
             Export SVG
           </button>
-          <button
-            type="button"
-            className="viewer-download"
-            onClick={handleShareView}
-            title="Copy a link to the current view"
-            aria-label="Copy a link to the current view"
-          >
-            {shareCopied ? (
-              <>
-                {CheckIcon}
-                Link copied!
-              </>
-            ) : (
-              <>
-                {ShareIcon}
-                Share Current View
-              </>
-            )}
-          </button>
+          {/* A shared link cannot reproduce a local file, so no Share for /local. */}
+          {!isLocalProbe && (
+            <button
+              type="button"
+              className="viewer-download"
+              onClick={handleShareView}
+              title="Copy a link to the current view"
+              aria-label="Copy a link to the current view"
+            >
+              {shareCopied ? (
+                <>
+                  {CheckIcon}
+                  Link copied!
+                </>
+              ) : (
+                <>
+                  {ShareIcon}
+                  Share Current View
+                </>
+              )}
+            </button>
+          )}
         </div>
       </header>
 

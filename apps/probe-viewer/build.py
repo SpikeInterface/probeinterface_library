@@ -22,6 +22,11 @@ The probe data lives in this same repository, so there is no clone step: the
 manifest is generated directly from the manufacturer folders at the repo root.
 The manifest metadata is read straight from the ProbeInterface JSON, so this
 script has no third-party dependencies.
+
+It also downloads the ProbeInterface JSON schema into the app, so the viewer can
+tell a user whether a file they load is spec-compliant. The schema is fetched
+from the same upstream URL the data tests use (see tests.py), which keeps the
+viewer's notion of "compliant" identical to the one CI enforces on this catalog.
 """
 
 from __future__ import annotations
@@ -31,9 +36,16 @@ import json
 import shutil
 import subprocess
 import sys
+import urllib.request
 from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import Iterable
+
+# The ProbeInterface JSON schema, from the same source tests.py validates against.
+SCHEMA_URL = (
+    "https://raw.githubusercontent.com/SpikeInterface/probeinterface/main/"
+    "src/probeinterface/schema/probe.json.schema"
+)
 
 
 # ============================================================================
@@ -170,6 +182,20 @@ def generate_manifest(
     return entries
 
 
+def download_schema(destination_dir: Path) -> Path:
+    # Kept in step with tests.py, which validates this catalog against the same
+    # URL: the viewer must not call a file non-compliant that CI accepts. The
+    # released package is deliberately not used as the source -- its schema
+    # predates contact_sides and would reject the double-sided probes in this
+    # very catalog.
+    with urllib.request.urlopen(SCHEMA_URL) as response:
+        schema = response.read()
+
+    destination = destination_dir / "probe.schema.json"
+    destination.write_bytes(schema)
+    return destination
+
+
 def write_manifest(entries: Iterable[ManifestEntry], destination: Path) -> None:
     destination.parent.mkdir(parents=True, exist_ok=True)
     payload = [entry.to_json() for entry in entries]
@@ -239,6 +265,9 @@ def main() -> None:
     manifest_path = public_dir / "probes-manifest.json"
     write_manifest(entries, manifest_path)
     print(f"Wrote {len(entries)} entries to {manifest_path}")
+
+    schema_path = download_schema(public_dir)
+    print(f"Downloaded probe schema to {schema_path}")
 
     if args.dev:
         # Start dev server

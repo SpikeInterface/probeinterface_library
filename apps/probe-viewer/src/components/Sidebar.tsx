@@ -23,6 +23,7 @@ export function Sidebar() {
   const selectManufacturer = useAppStore((state) => state.selectManufacturer);
   const selectedProbeId = useAppStore((state) => state.selectedProbeId);
   const selectProbe = useAppStore((state) => state.selectProbe);
+  const clearLocalProbe = useAppStore((state) => state.clearLocalProbe);
   const navigate = useNavigate();
   const searchQuery = useAppStore((state) => state.searchQuery);
   const setSearchQuery = useAppStore((state) => state.setSearchQuery);
@@ -201,6 +202,7 @@ export function Sidebar() {
           className="sidebar-home"
           onClick={() => {
             selectProbe(undefined);
+            clearLocalProbe();
             navigate("/");
           }}
           title="Back to the manufacturer catalog"
