@@ -38,7 +38,11 @@ function restoreViewFromParams(
 // restore: URL -> store, once per page load. Applies a shared link's camera and
 // view toggles on mount, then flips `cameraInitialized` so the URL writer is
 // allowed to start. useSyncCameraToUrl is the other half.
-export function useRestoreCameraFromUrl() {
+//
+// `enabled` is false wherever no probe is on screen (the catalog landing), where
+// there is no camera for a param to describe and reading one in would only feed
+// it back to the writer.
+export function useRestoreCameraFromUrl(enabled: boolean) {
   const [searchParams] = useSearchParams();
   const cameraInitialized = useAppStore((state) => state.cameraInitialized);
   const setZoom = useAppStore((state) => state.setZoom);
@@ -49,6 +53,7 @@ export function useRestoreCameraFromUrl() {
   const markCameraInitialized = useAppStore((state) => state.markCameraInitialized);
 
   useEffect(() => {
+    if (!enabled) return;
     if (cameraInitialized) return;
     restoreViewFromParams(
       searchParams,
@@ -60,6 +65,7 @@ export function useRestoreCameraFromUrl() {
     );
     markCameraInitialized();
   }, [
+    enabled,
     cameraInitialized,
     searchParams,
     setZoom,

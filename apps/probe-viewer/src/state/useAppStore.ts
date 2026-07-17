@@ -1,7 +1,9 @@
 import { create } from "zustand";
 
 import { fetchManifest } from "../services/manifest";
+import { buildLocalEntry } from "../services/localProbe";
 import { fetchProbeData } from "../services/probeLoader";
+import { validateProbeFile } from "../services/validateProbe";
 import type { ManifestEntry, ProbeInterfaceFile, ProbeViewerCamera } from "../types/probe";
 
 type LoadStatus = "idle" | "loading" | "success" | "error";
@@ -36,6 +38,12 @@ interface AppState {
   sideFilter: number | null;
   probeCache: Record<string, ProbeInterfaceFile>;
   probeStatus: Record<string, ProbeLoadState>;
+  // A probe loaded from the user's own file, kept out of the manifest and the
+  // router: local bytes have no shareable URL, so this lives in its own state
+  // and renders at /local. undefined until a file is loaded this session.
+  localProbe?: { entry: ManifestEntry; file: ProbeInterfaceFile };
+  localProbeStatus: LoadStatus;
+  localProbeError?: string;
   view: ViewState;
   // false until the camera has been seeded from the URL on load (or there was
   // nothing to seed). The URL writer holds off until this flips, so it cannot
@@ -48,6 +56,11 @@ interface AppState {
   setSideFilter: (sides: number | null) => void;
   selectProbe: (probeId?: string) => void;
   ensureProbeLoaded: (probeId: string) => Promise<ProbeInterfaceFile | undefined>;
+  // Reads, parses and schema-validates a user-provided file. On a compliant file
+  // localProbe is set; otherwise localProbeError carries a readable reason.
+  // Callers navigate to /local either way, where both outcomes are rendered.
+  loadLocalProbe: (file: File) => Promise<void>;
+  clearLocalProbe: () => void;
   setZoom: (zoom: number) => void;
   setMaxZoom: (value: number) => void;
   setViewCenter: (x: number | null, y: number | null) => void;
@@ -95,6 +108,9 @@ export const useAppStore = create<AppState>((set, get) => ({
   sideFilter: null,
   probeCache: {},
   probeStatus: {},
+  localProbe: undefined,
+  localProbeStatus: "idle",
+  localProbeError: undefined,
   view: INITIAL_VIEW_STATE,
   cameraInitialized: false,
 
@@ -145,6 +161,55 @@ export const useAppStore = create<AppState>((set, get) => ({
         selectedProbeId: probeId,
         selectedManufacturer: entry?.manufacturer ?? state.selectedManufacturer,
       };
+    }),
+
+  loadLocalProbe: async (file) => {
+    set({ localProbeStatus: "loading", localProbeError: undefined });
+
+    let parsed: unknown;
+    try {
+      parsed = JSON.parse(await file.text());
+    } catch {
+      set({
+        localProbeStatus: "error",
+        localProbeError: "This file is not valid JSON.",
+      });
+      return;
+    }
+
+    try {
+      const result = await validateProbeFile(parsed);
+      if (!result.valid) {
+        set({
+          localProbeStatus: "error",
+          localProbeError: `This file is not a compliant probeinterface file:\n${result.errors.join("\n")}`,
+        });
+        return;
+      }
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : "Could not validate the file.";
+      set({ localProbeStatus: "error", localProbeError: message });
+      return;
+    }
+
+    const probeFile = parsed as ProbeInterfaceFile;
+    const entry = buildLocalEntry(probeFile, file.name);
+    set({
+      localProbe: { entry, file: probeFile },
+      localProbeStatus: "success",
+      localProbeError: undefined,
+      // A local probe is not a manifest selection; clear any so the viewer
+      // resolves to the local probe while at /local.
+      selectedProbeId: undefined,
+    });
+  },
+
+  clearLocalProbe: () =>
+    set({
+      localProbe: undefined,
+      localProbeStatus: "idle",
+      localProbeError: undefined,
     }),
 
   ensureProbeLoaded: async (probeId) => {

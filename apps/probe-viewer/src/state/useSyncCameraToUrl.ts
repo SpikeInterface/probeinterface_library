@@ -26,6 +26,21 @@ const FLAG_DEFAULTS: ViewFlags = {
   showOverview: true,
 };
 
+// Every param this hook owns. Listed so they can all be dropped again when no
+// probe is in view (see the `enabled` handling below).
+const VIEW_PARAM_KEYS = ["zoom", "cx", "cy", "ids", "scale", "overview"];
+
+function clearViewParams(setSearchParams: SetURLSearchParams) {
+  setSearchParams(
+    (prev) => {
+      const next = new URLSearchParams(prev);
+      VIEW_PARAM_KEYS.forEach((key) => next.delete(key));
+      return next;
+    },
+    { replace: true },
+  );
+}
+
 function setOrDeleteFlag(
   params: URLSearchParams,
   key: string,
@@ -76,16 +91,30 @@ function writeViewToParams(
 // query string on every change, but only once `cameraInitialized` is set, so it
 // can't wipe a shared link's params before useRestoreCameraFromUrl has read them.
 // The restore-before-write ordering is documented on `cameraInitialized`.
-export function useSyncCameraToUrl() {
-  const [, setSearchParams] = useSearchParams();
+//
+// `enabled` is false wherever no probe is on screen (the catalog landing). There
+// the params describe nothing, so this drops them instead of writing: otherwise
+// the camera of whichever probe you last viewed rides along on the catalog URL,
+// and useRestoreCameraFromUrl reads it straight back in, making the pair
+// self-perpetuating and the params impossible to clear.
+export function useSyncCameraToUrl(enabled: boolean) {
+  const [searchParams, setSearchParams] = useSearchParams();
   const camera = useAppStore((state) => state.view.camera);
   const showContactIds = useAppStore((state) => state.view.showContactIds);
   const showScaleBar = useAppStore((state) => state.view.showScaleBar);
   const showOverview = useAppStore((state) => state.view.showOverview);
   const cameraInitialized = useAppStore((state) => state.cameraInitialized);
 
+  // Guarded on presence so clearing settles after one pass instead of looping:
+  // once the params are gone this is false and the effect no-ops.
+  const hasViewParams = VIEW_PARAM_KEYS.some((key) => searchParams.has(key));
+
   const writeTimeout = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   useEffect(() => {
+    if (!enabled) {
+      if (hasViewParams) clearViewParams(setSearchParams);
+      return;
+    }
     if (!cameraInitialized) return;
 
     clearTimeout(writeTimeout.current);
@@ -98,5 +127,14 @@ export function useSyncCameraToUrl() {
     }, 300);
 
     return () => clearTimeout(writeTimeout.current);
-  }, [cameraInitialized, camera, showContactIds, showScaleBar, showOverview, setSearchParams]);
+  }, [
+    enabled,
+    hasViewParams,
+    cameraInitialized,
+    camera,
+    showContactIds,
+    showScaleBar,
+    showOverview,
+    setSearchParams,
+  ]);
 }

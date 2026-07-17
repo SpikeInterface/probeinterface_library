@@ -29,6 +29,12 @@ const router = createHashRouter([
     path: "/probes/:manufacturer/:model",
     element: <App />,
   },
+  // A probe loaded from the user's own file. It carries no slug because local
+  // bytes have no shareable URL; the file lives in the store, not the route.
+  {
+    path: "/local",
+    element: <App />,
+  },
 ]);
 
 createRoot(document.getElementById("root")!).render(
