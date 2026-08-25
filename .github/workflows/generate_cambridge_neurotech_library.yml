@@ -24,11 +24,13 @@ jobs:
         with:
           python-version: '3.10' 
 
-      #  Clone dev version of probeinterface
+      #  Clone the latest released version of probeinterface
       - name: Clone external repositories
         run: |
           # probeinterface
-          git clone https://github.com/spikeinterface/probeinterface ./probeinterface
+          PROBEINTERFACE_VERSION=$(git ls-remote --tags --refs --sort=-v:refname https://github.com/spikeinterface/probeinterface | head -n 1 | sed 's|.*refs/tags/||')
+          echo "Cloning probeinterface $PROBEINTERFACE_VERSION"
+          git clone --depth 1 --branch "$PROBEINTERFACE_VERSION" https://github.com/spikeinterface/probeinterface ./probeinterface
 
           # cambridge neurotech probe maps
           git clone https://github.com/cambridge-neurotech/probe_maps.git ./probe_maps
