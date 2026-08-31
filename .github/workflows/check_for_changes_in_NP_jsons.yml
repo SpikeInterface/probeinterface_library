@@ -24,18 +24,14 @@ jobs:
         with:
           python-version: '3.10' 
 
-      # we just the release probeinterface to get the version number
+      # we use the released probeinterface, cloned so that the generation
+      # scripts under resources/ are available as well
       - name: Install probeinterface and matplotlib
         run: |
-          pip install probeinterface matplotlib
-          PROBEINTERFACE_VERSION=$(pip show probeinterface | grep Version | awk '{print $2}')
-          pip uninstall probeinterface --yes
-          git clone https://github.com/spikeinterface/probeinterface ./probeinterface
-          cd probeinterface
-          git fetch
-          git checkout tags/$PROBEINTERFACE_VERSION
-          cd ..
-          pip install ./probeinterface
+          PROBEINTERFACE_VERSION=$(git ls-remote --tags --refs --sort=-v:refname https://github.com/spikeinterface/probeinterface | head -n 1 | sed 's|.*refs/tags/||')
+          echo "Cloning probeinterface $PROBEINTERFACE_VERSION"
+          git clone --depth 1 --branch "$PROBEINTERFACE_VERSION" https://github.com/spikeinterface/probeinterface ./probeinterface
+          pip install ./probeinterface matplotlib
 
 
       - name: Generate full NP library and check for changes
