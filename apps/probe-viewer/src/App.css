@@ -589,28 +589,103 @@
 
 .viewer-snippet {
   position: relative;
+  display: inline-flex;
+  vertical-align: middle;
+}
+
+/* Looks like the JSON link, with a chevron to say it opens something. */
+.viewer-snippet-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.15rem;
+  padding: 0;
+  border: none;
+  background: none;
+  font: inherit;
+  font-weight: 600;
+  color: var(--accent);
+  cursor: pointer;
+}
+
+.viewer-snippet-toggle:hover {
+  color: var(--accent-strong);
 }
 
 .viewer-snippet-popover {
   position: absolute;
   top: calc(100% + 0.4rem);
-  right: 0;
+  left: 0;
   z-index: 10;
   display: flex;
-  align-items: flex-start;
-  gap: 0.75rem;
-  padding: 0.75rem;
+  flex-direction: column;
+  min-width: 22rem;
+  overflow: hidden;
   background: var(--surface);
   border: 1px solid var(--line);
   border-radius: var(--radius);
   box-shadow: var(--shadow);
 }
 
+/* Language label on the left, copy action on the right, as in docs code blocks. */
+.viewer-snippet-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.3rem 0.4rem 0.3rem 0.8rem;
+  border-bottom: 1px solid var(--line);
+  background: var(--bg);
+}
+
+.viewer-snippet-language {
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.viewer-snippet-copy {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.25rem 0.45rem;
+  border: none;
+  border-radius: 0.3rem;
+  background: none;
+  font: inherit;
+  font-size: 0.78rem;
+  color: var(--ink-2);
+  cursor: pointer;
+}
+
+.viewer-snippet-copy:hover {
+  color: var(--accent-strong);
+  background: var(--accent-soft);
+}
+
 .viewer-snippet-code {
-  margin: 0;
-  font-size: 0.85rem;
-  color: var(--ink);
+  display: block;
+  padding: 0.8rem 1rem;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+  font-size: 0.82rem;
+  line-height: 1.5;
+  color: var(--ink-2);
+  background: #f8fafc;
   white-space: pre;
+}
+
+/* Syntax highlighting kept monochrome: the chrome carries no hue (see :root). */
+.viewer-snippet-token--keyword {
+  font-weight: 700;
+  color: var(--accent-strong);
+}
+
+.viewer-snippet-token--function {
+  color: var(--ink);
+}
+
+.viewer-snippet-token--string {
+  color: var(--muted);
 }
 
 .viewer-canvas-placeholder {

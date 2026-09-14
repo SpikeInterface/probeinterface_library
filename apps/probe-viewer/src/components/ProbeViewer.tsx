@@ -10,6 +10,7 @@ import { ProbeCanvas } from "./ProbeCanvas";
 import { DoubleSidedProbeCanvas } from "./DoubleSidedProbeCanvas";
 import { LocalProbePanel } from "./LocalProbePanel";
 import { ProbeOverview } from "./ProbeOverview";
+import { PythonSnippet } from "./PythonSnippet";
 
 const CANVAS_PADDING = 40;
 // How far past "the smallest contact exactly fills the viewport" the zoom cap
@@ -128,13 +129,6 @@ const DownloadIcon = (
     <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
     <polyline points="7 10 12 15 17 10"/>
     <line x1="12" y1="15" x2="12" y2="3"/>
-  </svg>
-);
-
-const CodeIcon = (
-  <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <polyline points="16 18 22 12 16 6"/>
-    <polyline points="8 6 2 12 8 18"/>
   </svg>
 );
 
@@ -271,36 +265,6 @@ export function ProbeViewer() {
     });
   }, []);
 
-  const pythonSnippet = entry
-    ? `from probeinterface import get_probe\n\nprobe = get_probe("${entry.manufacturer}", "${entry.model}")`
-    : "";
-  const [snippetOpen, setSnippetOpen] = useState(false);
-  const [snippetCopied, setSnippetCopied] = useState(false);
-  const snippetRef = useRef<HTMLDivElement>(null);
-  const handleCopySnippet = useCallback(() => {
-    navigator.clipboard.writeText(pythonSnippet).then(() => {
-      setSnippetCopied(true);
-      setTimeout(() => setSnippetCopied(false), 2000);
-    });
-  }, [pythonSnippet]);
-
-  // Close the snippet popover on a click outside it or on Escape.
-  useEffect(() => {
-    if (!snippetOpen) return;
-    const handleMouseDown = (event: MouseEvent) => {
-      if (!snippetRef.current?.contains(event.target as Node)) setSnippetOpen(false);
-    };
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") setSnippetOpen(false);
-    };
-    document.addEventListener("mousedown", handleMouseDown);
-    document.addEventListener("keydown", handleKeyDown);
-    return () => {
-      document.removeEventListener("mousedown", handleMouseDown);
-      document.removeEventListener("keydown", handleKeyDown);
-    };
-  }, [snippetOpen]);
-
   const lastResetProbeId = useRef<string | undefined>(undefined);
 
   useEffect(() => {
@@ -431,45 +395,14 @@ export function ProbeViewer() {
                 >
                   {DownloadIcon}
                 </a>
+                {" "}
+                ·{" "}
+                <PythonSnippet manufacturer={entry.manufacturer} model={entry.model} />
               </>
             )}
           </p>
         </div>
         <div className="viewer-header-actions">
-          {/* A local file is not in the library, so get_probe cannot load it. */}
-          {!isLocalProbe && (
-            <div className="viewer-snippet" ref={snippetRef}>
-              <button
-                type="button"
-                className="viewer-download"
-                onClick={() => setSnippetOpen((open) => !open)}
-                title="Show how to load this probe with probeinterface"
-                aria-expanded={snippetOpen}
-              >
-                {CodeIcon}
-                Python
-              </button>
-              {snippetOpen && (
-                <div className="viewer-snippet-popover">
-                  <pre className="viewer-snippet-code">{pythonSnippet}</pre>
-                  <button
-                    type="button"
-                    className="viewer-download"
-                    onClick={handleCopySnippet}
-                  >
-                    {snippetCopied ? (
-                      <>
-                        {CheckIcon}
-                        Copied!
-                      </>
-                    ) : (
-                      "Copy"
-                    )}
-                  </button>
-                </div>
-              )}
-            </div>
-          )}
           <button
             type="button"
             className="viewer-download"
