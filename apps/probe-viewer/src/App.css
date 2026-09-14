@@ -291,7 +291,7 @@
   color: var(--ink);
 }
 
-/* "{ } JSON" link inline in the subtitle metadata line. It uses the blue link
+/* "JSON" link inline in the subtitle metadata line. It uses the blue link
    color and a persistent underline (on the word, not the icon) so it clearly
    reads as a clickable link rather than just emphasized text. */
 .viewer-json-link {
@@ -312,6 +312,27 @@
 
 .viewer-json-link:hover {
   color: var(--accent-strong);
+}
+
+.viewer-json-download {
+  display: inline-flex;
+  align-items: center;
+  vertical-align: middle;
+  margin-left: 0.35rem;
+  padding: 0.15rem;
+  border-radius: 0.3rem;
+  color: var(--accent);
+  transition: color 0.2s ease, background 0.2s ease;
+}
+
+.viewer-json-download svg {
+  width: 14px;
+  height: 14px;
+}
+
+.viewer-json-download:hover {
+  color: var(--accent-strong);
+  background: var(--accent-soft);
 }
 
 .viewer-subtitle {
@@ -564,6 +585,32 @@
   border-color: var(--accent);
   color: var(--accent-strong);
   background: var(--accent-soft);
+}
+
+.viewer-snippet {
+  position: relative;
+}
+
+.viewer-snippet-popover {
+  position: absolute;
+  top: calc(100% + 0.4rem);
+  right: 0;
+  z-index: 10;
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+}
+
+.viewer-snippet-code {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--ink);
+  white-space: pre;
 }
 
 .viewer-canvas-placeholder {
