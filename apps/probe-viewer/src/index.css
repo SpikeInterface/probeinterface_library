@@ -33,3 +33,16 @@ a {
 #root {
   height: 100%;
 }
+
+/* When the layout does not fit the viewport (narrow screens stack the sidebar
+   above the viewer; short screens cannot fit the viewer), the document scrolls. */
+@media (max-width: 960px), (max-height: 680px) {
+  body {
+    height: auto;
+    overflow: auto;
+  }
+
+  #root {
+    height: auto;
+  }
+}

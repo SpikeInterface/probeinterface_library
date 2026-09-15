@@ -540,6 +540,7 @@
   width: 100%;
   height: 100%;
   cursor: grab;
+  touch-action: none; /* a touch drag pans the probe instead of scrolling the page */
 }
 
 .viewer-canvas canvas:active {
@@ -740,9 +741,32 @@
   color: #dc2626;
 }
 
+/* Too narrow for the sidebar beside the viewer, or too short for the whole
+   viewer: the document scrolls instead of being locked to the viewport. */
+@media (max-width: 960px), (max-height: 680px) {
+  .app-shell {
+    height: auto;
+    overflow: visible;
+  }
+
+  .sidebar {
+    height: auto;
+  }
+
+  .sidebar-list {
+    flex: none;
+    max-height: 40dvh;
+  }
+}
+
 @media (max-width: 960px) {
   .app-shell {
     flex-direction: column;
+  }
+
+  .viewer-header,
+  .viewer-header-actions {
+    flex-wrap: wrap;
   }
 
   .app-sidebar {
