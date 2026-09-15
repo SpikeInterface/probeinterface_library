@@ -1,7 +1,7 @@
 import { useEffect, useRef, useMemo } from "react";
 import type { ProbeInterfaceFile, ProbeViewerCamera } from "../types/probe";
 
-interface ProbeOverviewProps {
+interface ProbeMinimapProps {
   probeData: ProbeInterfaceFile;
   camera: ProbeViewerCamera;
   /** Main canvas dimensions */
@@ -49,13 +49,13 @@ function computeGeometrySummary(probeData: ProbeInterfaceFile): GeometrySummary 
   return { minX, maxX, minY, maxY, width, height, centerX, centerY };
 }
 
-export function ProbeOverview({
+export function ProbeMinimap({
   probeData,
   camera,
   mainWidth,
   mainHeight,
   onViewCenterChange,
-}: ProbeOverviewProps) {
+}: ProbeMinimapProps) {
   const { zoom, centerX, centerY } = camera;
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const geometry = useMemo(() => computeGeometrySummary(probeData), [probeData]);
@@ -234,7 +234,7 @@ export function ProbeOverview({
   return (
     <canvas
       ref={canvasRef}
-      className="probe-overview"
+      className="probe-minimap"
       onClick={handleClick}
       title="Click to navigate"
     />

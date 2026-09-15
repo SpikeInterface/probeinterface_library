@@ -72,24 +72,24 @@ export function PythonSnippet({ manufacturer, model }: PythonSnippetProps) {
   }, [open]);
 
   return (
-    <span className="viewer-snippet" ref={ref}>
+    <span className="probe-view-snippet" ref={ref}>
       <button
         type="button"
-        className="viewer-snippet-toggle"
+        className="probe-view-snippet-toggle"
         onClick={() => setOpen((value) => !value)}
         title="Show how to load this probe with probeinterface"
         aria-expanded={open}
       >
-        <span className="viewer-json-link-text">Python</span>
+        <span className="probe-view-json-link-text">Python</span>
         {ChevronDownIcon}
       </button>
       {open && (
-        <span className="viewer-snippet-popover">
-          <span className="viewer-snippet-header">
-            <span className="viewer-snippet-language">Python</span>
+        <span className="probe-view-snippet-popover">
+          <span className="probe-view-snippet-header">
+            <span className="probe-view-snippet-language">Python</span>
             <button
               type="button"
-              className="viewer-snippet-copy"
+              className="probe-view-snippet-copy"
               onClick={handleCopy}
               aria-label="Copy code"
             >
@@ -97,9 +97,9 @@ export function PythonSnippet({ manufacturer, model }: PythonSnippetProps) {
               {copied ? "Copied!" : "Copy"}
             </button>
           </span>
-          <code className="viewer-snippet-code">
+          <code className="probe-view-snippet-code">
             {tokens.map(([kind, text], index) => (
-              <span key={index} className={kind ? `viewer-snippet-token--${kind}` : undefined}>
+              <span key={index} className={kind ? `probe-view-snippet-token--${kind}` : undefined}>
                 {text}
               </span>
             ))}

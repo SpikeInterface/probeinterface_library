@@ -26,7 +26,7 @@ interface UseProbeViewportArgs {
 
 // Camera + interaction logic shared by every probe canvas. This is a verbatim
 // extraction of the pan/zoom/projection math that used to live inside
-// ProbeCanvas; keeping it in one place means a scroll-zoom or drag fix lands for
+// ProbeDrawing; keeping it in one place means a scroll-zoom or drag fix lands for
 // both the single-sided and double-sided views at once. The hook owns no
 // drawing: each canvas component runs its own draw effect using getProjection().
 export function useProbeViewport({
