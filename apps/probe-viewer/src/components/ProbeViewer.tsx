@@ -10,6 +10,7 @@ import { ProbeCanvas } from "./ProbeCanvas";
 import { DoubleSidedProbeCanvas } from "./DoubleSidedProbeCanvas";
 import { LocalProbePanel } from "./LocalProbePanel";
 import { ProbeOverview } from "./ProbeOverview";
+import { PythonSnippet } from "./PythonSnippet";
 
 const CANVAS_PADDING = 40;
 // How far past "the smallest contact exactly fills the viewport" the zoom cap
@@ -128,14 +129,6 @@ const DownloadIcon = (
     <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
     <polyline points="7 10 12 15 17 10"/>
     <line x1="12" y1="15" x2="12" y2="3"/>
-  </svg>
-);
-
-// Curly-braces glyph, the de-facto standard symbol for JSON/code.
-const JsonIcon = (
-  <svg aria-hidden="true" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M8 3H7a2 2 0 0 0-2 2v5a2 2 0 0 1-2 2 2 2 0 0 1 2 2v5c0 1.1.9 2 2 2h1"/>
-    <path d="M16 3h1a2 2 0 0 1 2 2v5a2 2 0 0 0 2 2 2 2 0 0 0-2 2v5a2 2 0 0 1-2 2h-1"/>
   </svg>
 );
 
@@ -391,9 +384,20 @@ export function ProbeViewer() {
                   rel="noreferrer"
                   title="View this probe's JSON on GitHub"
                 >
-                  {JsonIcon}
                   <span className="viewer-json-link-text">JSON</span>
                 </a>
+                <a
+                  className="viewer-json-download"
+                  href={entry.jsonUrl}
+                  download={`${entry.model}.json`}
+                  title="Download JSON"
+                  aria-label="Download JSON"
+                >
+                  {DownloadIcon}
+                </a>
+                {" "}
+                ·{" "}
+                <PythonSnippet manufacturer={entry.manufacturer} model={entry.model} />
               </>
             )}
           </p>
