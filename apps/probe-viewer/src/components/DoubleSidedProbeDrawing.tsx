@@ -12,7 +12,7 @@ import {
 } from "../geometry/draw";
 import type { ManifestEntry, ProbeInterfaceFile, ProbeViewerCamera } from "../types/probe";
 
-interface DoubleSidedProbeCanvasProps {
+interface DoubleSidedProbeDrawingProps {
   entry: ManifestEntry;
   probeData: ProbeInterfaceFile;
   camera: ProbeViewerCamera;
@@ -27,7 +27,7 @@ function colorForSide(side: string | undefined) {
   return side === "back" ? CONTACT_COLORS.back : CONTACT_COLORS.front;
 }
 
-export function DoubleSidedProbeCanvas({
+export function DoubleSidedProbeDrawing({
   entry,
   probeData,
   camera,
@@ -35,7 +35,7 @@ export function DoubleSidedProbeCanvas({
   overlaySide,
   onViewCenterChange,
   onZoom,
-}: DoubleSidedProbeCanvasProps) {
+}: DoubleSidedProbeDrawingProps) {
   const { zoom, centerX, centerY } = camera;
   const { ref: containerRef, size } = useResizeObserver<HTMLDivElement>();
   const lastCanvasSizeRef = useRef({ w: 0, h: 0, dpr: 0 });
@@ -146,7 +146,7 @@ export function DoubleSidedProbeCanvas({
   }, [canvasRef, entry.id, geometry, getProjection, labelInfo, overlaySide, probe, showScaleBar, size.height, size.width, zoom, centerX, centerY]);
 
   return (
-    <div ref={containerRef} className="viewer-canvas-surface">
+    <div ref={containerRef} className="probe-drawing-area">
       {geometry && probe ? (
         <canvas
           ref={canvasRef}
@@ -162,7 +162,7 @@ export function DoubleSidedProbeCanvas({
           onDoubleClick={handleDoubleClick}
         />
       ) : (
-        <div className="viewer-placeholder">
+        <div className="probe-view-placeholder">
           <p>No planar geometry available for this probe.</p>
         </div>
       )}

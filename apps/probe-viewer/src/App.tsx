@@ -3,7 +3,7 @@ import { useLocation, useParams } from "react-router-dom";
 
 import { ProbeIndex } from "./components/ProbeIndex";
 import { ProbeViewer } from "./components/ProbeViewer";
-import { Sidebar } from "./components/Sidebar";
+import { ProbeSelectionMenu } from "./components/ProbeSelectionMenu";
 import { useAppStore } from "./state/useAppStore";
 import { useProbeRouteSync } from "./state/useProbeRouteSync";
 import { useRestoreCameraFromUrl } from "./state/useRestoreCameraFromUrl";
@@ -43,10 +43,10 @@ function App() {
 
   return (
     <div className="app-shell">
-      <aside className="app-sidebar">
-        <Sidebar />
+      <aside className="probe-selection-menu">
+        <ProbeSelectionMenu />
       </aside>
-      <main className="app-main">
+      <main className="probe-display">
         <ProbeViewer />
       </main>
     </div>
