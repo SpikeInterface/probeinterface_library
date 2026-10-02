@@ -16,7 +16,7 @@ import type {
   ProbeViewerCamera,
 } from "../types/probe";
 
-interface ProbeCanvasProps {
+interface ProbeDrawingProps {
   entry: ManifestEntry;
   probeData: ProbeInterfaceFile;
   camera: ProbeViewerCamera;
@@ -27,7 +27,7 @@ interface ProbeCanvasProps {
   onZoom: (zoom: number) => void;
 }
 
-export function ProbeCanvas({
+export function ProbeDrawing({
   entry,
   probeData,
   camera,
@@ -36,7 +36,7 @@ export function ProbeCanvas({
   showScaleBar,
   onViewCenterChange,
   onZoom,
-}: ProbeCanvasProps) {
+}: ProbeDrawingProps) {
   const { zoom, centerX, centerY } = camera;
   const { ref: containerRef, size } = useResizeObserver<HTMLDivElement>();
   // Track the last applied canvas backing-store size so we only reallocate (an
@@ -178,7 +178,7 @@ export function ProbeCanvas({
   ]);
 
   return (
-    <div ref={containerRef} className="viewer-canvas-surface">
+    <div ref={containerRef} className="probe-drawing-area">
       {geometry && probe ? (
         <canvas
           ref={canvasRef}
@@ -197,7 +197,7 @@ export function ProbeCanvas({
           onDoubleClick={handleDoubleClick}
         />
       ) : (
-        <div className="viewer-placeholder">
+        <div className="probe-view-placeholder">
           <p>No planar geometry available for this probe.</p>
         </div>
       )}
