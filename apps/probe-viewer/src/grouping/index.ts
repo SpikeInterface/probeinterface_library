@@ -1,5 +1,6 @@
 import type { HierarchyConfig } from "./types";
 import imecHierarchy from "./imec_neuropixels.json";
+import cambridgeNeurotechHierarchy from "./cambridgeneurotech.json";
 
 // Registry mapping a manufacturer key (as it appears in the manifest) to its
 // explicit sidebar hierarchy. A manufacturer absent here has no hierarchy and
@@ -10,6 +11,7 @@ import imecHierarchy from "./imec_neuropixels.json";
 // JSON is used because Vite imports it with no extra dependency.
 const REGISTRY: Record<string, HierarchyConfig> = {
   imec: imecHierarchy as HierarchyConfig,
+  cambridgeneurotech: cambridgeNeurotechHierarchy as HierarchyConfig,
 };
 
 export function getGroupingConfig(manufacturer: string): HierarchyConfig | undefined {
