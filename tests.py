@@ -5,7 +5,16 @@ import jsonschema
 import pytest
 import requests
 
-schema_url = "https://raw.githubusercontent.com/SpikeInterface/probeinterface/main/src/probeinterface/schema/probe.json.schema"
+# Validate against the schema of the latest *released* probeinterface, not main:
+# the catalog is meant to be readable by the version users actually install.
+pypi_response = requests.get("https://pypi.org/pypi/probeinterface/json")
+pypi_response.raise_for_status()
+probeinterface_version = pypi_response.json()["info"]["version"]
+
+schema_url = (
+    f"https://raw.githubusercontent.com/SpikeInterface/probeinterface/{probeinterface_version}/"
+    "src/probeinterface/schema/probe.json.schema"
+)
 
 response = requests.get(schema_url)
 response.raise_for_status()
