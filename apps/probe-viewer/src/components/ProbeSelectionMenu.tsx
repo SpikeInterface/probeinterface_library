@@ -9,6 +9,7 @@ import type { GroupNode } from "../grouping/types";
 
 const MANUFACTURER_DISPLAY_NAMES: Record<string, string> = {
   cambridgeneurotech: "Cambridge NeuroTech",
+  corticale: "Corticale",
   diagnosticbiochips: "Diagnostic Biochips",
   imec: "IMEC (Neuropixels)",
   neuronexus: "NeuroNexus",

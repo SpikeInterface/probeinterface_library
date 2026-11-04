@@ -9,6 +9,7 @@ import type { ManifestEntry } from "../types/probe";
 // falls back to a brand-colored wordmark.
 const MANUFACTURER_LOGOS: Record<string, string> = {
   cambridgeneurotech: "cambridgeneurotech.png",
+  corticale: "corticale.png",
   diagnosticbiochips: "diagnosticbiochips.png",
   imec: "imec.png",
   neuronexus: "neuronexus.svg",
@@ -42,6 +43,7 @@ function ManufacturerMedia({ groupKey, label }: { groupKey: string; label: strin
 // Mirrors the ProbeSelectionMenu's friendly names.
 const MANUFACTURER_DISPLAY_NAMES: Record<string, string> = {
   cambridgeneurotech: "Cambridge NeuroTech",
+  corticale: "Corticale",
   diagnosticbiochips: "Diagnostic Biochips",
   imec: "IMEC · Neuropixels",
   neuronexus: "NeuroNexus",
