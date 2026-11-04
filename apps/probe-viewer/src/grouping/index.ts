@@ -1,4 +1,5 @@
 import type { HierarchyConfig } from "./types";
+import corticaleHierarchy from "./corticale.json";
 import imecHierarchy from "./imec_neuropixels.json";
 
 // Registry mapping a manufacturer key (as it appears in the manifest) to its
@@ -9,6 +10,7 @@ import imecHierarchy from "./imec_neuropixels.json";
 //
 // JSON is used because Vite imports it with no extra dependency.
 const REGISTRY: Record<string, HierarchyConfig> = {
+  corticale: corticaleHierarchy as HierarchyConfig,
   imec: imecHierarchy as HierarchyConfig,
 };
 

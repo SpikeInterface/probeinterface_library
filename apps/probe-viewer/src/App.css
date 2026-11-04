@@ -931,6 +931,9 @@
 .probe-card-logo--cambridgeneurotech {
   background: linear-gradient(135deg, #0e7490, #06b6d4);
 }
+.probe-card-logo--corticale {
+  background: linear-gradient(135deg, #115e59, #14b8a6);
+}
 .probe-card-logo--imec {
   background: linear-gradient(135deg, #9f1239, #e11d48);
 }

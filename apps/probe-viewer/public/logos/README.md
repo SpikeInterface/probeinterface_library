@@ -5,6 +5,7 @@ manufacturer's landing-page card. The key is the manufacturer folder name in the
 repo root, e.g.:
 
 - `cambridgeneurotech.png`
+- `corticale.png`
 - `diagnosticbiochips.png`
 - `imec.png`
 - `neuronexus.png`

@@ -1,0 +1,10 @@
+{
+  "hierarchy": [
+    { "label": "SiNAPS Generation II",
+      "children": [
+        { "label": "Single-shank", "probes": ["M0001", "M0003"] },
+        { "label": "Multi-shank", "probes": ["M0002", "M0004"] },
+        { "label": "Non-human-primate", "probes": ["M0005"] }
+      ] }
+  ]
+}
