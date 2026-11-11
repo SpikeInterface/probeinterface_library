@@ -33,3 +33,17 @@ a {
 #root {
   height: 100%;
 }
+
+/* When the layout does not fit the viewport (narrow screens stack the probe
+   selection menu above the probe display; short screens cannot fit the probe
+   view), the document scrolls. */
+@media (max-width: 960px), (max-height: 680px) {
+  body {
+    height: auto;
+    overflow: auto;
+  }
+
+  #root {
+    height: auto;
+  }
+}

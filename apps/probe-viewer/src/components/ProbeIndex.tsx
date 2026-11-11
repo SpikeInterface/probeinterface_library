@@ -39,7 +39,7 @@ function ManufacturerMedia({ groupKey, label }: { groupKey: string; label: strin
   );
 }
 
-// Mirrors the Sidebar's friendly names.
+// Mirrors the ProbeSelectionMenu's friendly names.
 const MANUFACTURER_DISPLAY_NAMES: Record<string, string> = {
   cambridgeneurotech: "Cambridge NeuroTech",
   diagnosticbiochips: "Diagnostic Biochips",
@@ -73,7 +73,7 @@ const UploadIcon = (
 );
 
 // Landing page: one card per manufacturer. Selecting a card enters the existing
-// probe view (sidebar + viewer) on that manufacturer's first probe.
+// probe page (probe selection menu + probe display) on that manufacturer's first probe.
 export function ProbeIndex() {
   const manifest = useAppStore((state) => state.manifest);
   const manifestStatus = useAppStore((state) => state.manifestStatus);

@@ -6,10 +6,11 @@ import { useAppStore } from "../state/useAppStore";
 import { exportProbeAsPng, exportProbeAsSvg } from "../utils/exportUtils";
 import { getSideInfo } from "../geometry/sides";
 import type { ContactShapeParams, ProbeInterfaceProbe } from "../types/probe";
-import { ProbeCanvas } from "./ProbeCanvas";
-import { DoubleSidedProbeCanvas } from "./DoubleSidedProbeCanvas";
+import { ProbeDrawing } from "./ProbeDrawing";
+import { DoubleSidedProbeDrawing } from "./DoubleSidedProbeDrawing";
 import { LocalProbePanel } from "./LocalProbePanel";
-import { ProbeOverview } from "./ProbeOverview";
+import { ProbeMinimap } from "./ProbeMinimap";
+import { PythonSnippet } from "./PythonSnippet";
 
 const CANVAS_PADDING = 40;
 // How far past "the smallest contact exactly fills the viewport" the zoom cap
@@ -128,14 +129,6 @@ const DownloadIcon = (
     <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
     <polyline points="7 10 12 15 17 10"/>
     <line x1="12" y1="15" x2="12" y2="3"/>
-  </svg>
-);
-
-// Curly-braces glyph, the de-facto standard symbol for JSON/code.
-const JsonIcon = (
-  <svg aria-hidden="true" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M8 3H7a2 2 0 0 0-2 2v5a2 2 0 0 1-2 2 2 2 0 0 1 2 2v5c0 1.1.9 2 2 2h1"/>
-    <path d="M16 3h1a2 2 0 0 1 2 2v5a2 2 0 0 0 2 2 2 2 0 0 0-2 2v5a2 2 0 0 1-2 2h-1"/>
   </svg>
 );
 
@@ -339,7 +332,7 @@ export function ProbeViewer() {
 
   if (manifestStatus === "loading") {
     return (
-      <div className="viewer-placeholder">
+      <div className="probe-view-placeholder">
         <p>Loading manifest…</p>
       </div>
     );
@@ -347,7 +340,7 @@ export function ProbeViewer() {
 
   if (manifestStatus === "error") {
     return (
-      <div className="viewer-placeholder viewer-placeholder--error">
+      <div className="probe-view-placeholder probe-view-placeholder--error">
         <p>{statusMessage ?? "Unable to load catalog."}</p>
       </div>
     );
@@ -357,7 +350,7 @@ export function ProbeViewer() {
   // schema errors) or a cold visit, since local bytes cannot survive a reload.
   if (!entry && isLocalRoute) {
     return (
-      <div className="viewer-panel viewer-panel--empty">
+      <div className="probe-view probe-view--empty">
         <LocalProbePanel />
       </div>
     );
@@ -365,18 +358,18 @@ export function ProbeViewer() {
 
   if (!entry) {
     return (
-      <div className="viewer-placeholder">
+      <div className="probe-view-placeholder">
         <p>Select a probe to see its details.</p>
       </div>
     );
   }
 
   return (
-    <div className="viewer-panel">
-      <header className="viewer-header">
+    <div className="probe-view">
+      <header className="probe-view-header">
         <div>
-          <h2 className="viewer-title">{entry.displayName}</h2>
-          <p className="viewer-subtitle">
+          <h2 className="probe-view-title">{entry.displayName}</h2>
+          <p className="probe-view-subtitle">
             {entry.manufacturer} · {entry.contactCount} contacts ·{" "}
             {entry.shankCount} shanks
             {/* A locally loaded probe has no GitHub source to link to. */}
@@ -385,23 +378,34 @@ export function ProbeViewer() {
                 {" "}
                 ·{" "}
                 <a
-                  className="viewer-json-link"
+                  className="probe-view-json-link"
                   href={`https://github.com/SpikeInterface/probeinterface_library/blob/main/${entry.manufacturer}/${entry.model}/${entry.model}.json`}
                   target="_blank"
                   rel="noreferrer"
                   title="View this probe's JSON on GitHub"
                 >
-                  {JsonIcon}
-                  <span className="viewer-json-link-text">JSON</span>
+                  <span className="probe-view-json-link-text">JSON</span>
                 </a>
+                <a
+                  className="probe-view-json-download"
+                  href={entry.jsonUrl}
+                  download={`${entry.model}.json`}
+                  title="Download JSON"
+                  aria-label="Download JSON"
+                >
+                  {DownloadIcon}
+                </a>
+                {" "}
+                ·{" "}
+                <PythonSnippet manufacturer={entry.manufacturer} model={entry.model} />
               </>
             )}
           </p>
         </div>
-        <div className="viewer-header-actions">
+        <div className="probe-view-header-actions">
           <button
             type="button"
-            className="viewer-download"
+            className="probe-view-action"
             onClick={handleExportPng}
             title="Export current view as PNG (white background). If scale bar is enabled, it will be included."
           >
@@ -410,7 +414,7 @@ export function ProbeViewer() {
           </button>
           <button
             type="button"
-            className="viewer-download"
+            className="probe-view-action"
             onClick={handleExportSvg}
             title="Export current view as SVG (transparent background). If scale bar is enabled, it will be included."
           >
@@ -421,7 +425,7 @@ export function ProbeViewer() {
           {!isLocalProbe && (
             <button
               type="button"
-              className="viewer-download"
+              className="probe-view-action"
               onClick={handleShareView}
               title="Copy a link to the current view"
               aria-label="Copy a link to the current view"
@@ -443,7 +447,7 @@ export function ProbeViewer() {
       </header>
 
       {status !== "error" && probeData && (
-        <section className="viewer-toolbar viewer-toolbar--top">
+        <section className="probe-view-toolbar probe-view-toolbar--presets">
           <button type="button" onClick={() => resetView()} title="Show the whole probe outline">
             Full Probe View
           </button>
@@ -451,12 +455,12 @@ export function ProbeViewer() {
             Full Contacts View
           </button>
           {isDoubleSided && (
-            <div className="viewer-controls-sides">
-              <span className="viewer-controls-label">
+            <div className="probe-view-sides-control">
+              <span className="probe-view-sides-label">
                 Double-sided ·{" "}
                 {sideInfo.sides.map((side) => `${sideCounts[side] ?? 0} ${side}`).join(" / ")}
               </span>
-              <div className="viewer-segmented" role="group" aria-label="Which face to show">
+              <div className="probe-view-segmented" role="group" aria-label="Which face to show">
                 {sideInfo.sides.map((side) => (
                   <button
                     key={side}
@@ -465,7 +469,7 @@ export function ProbeViewer() {
                     onClick={() => setOverlaySide(side)}
                     title={`Show the ${side} face channel map`}
                   >
-                    <span className={`viewer-side-swatch viewer-side-swatch--${side}`} />
+                    <span className={`probe-view-side-swatch probe-view-side-swatch--${side}`} />
                     {side}
                   </button>
                 ))}
@@ -475,16 +479,16 @@ export function ProbeViewer() {
         </section>
       )}
 
-      <section className="viewer-canvas" ref={canvasContainerRef}>
+      <section className="probe-drawing-window" ref={canvasContainerRef}>
         {status === "error" && (
-          <div className="viewer-placeholder viewer-placeholder--error">
+          <div className="probe-view-placeholder probe-view-placeholder--error">
             <p>{statusMessage ?? "Failed to load probe data."}</p>
           </div>
         )}
         {status !== "error" && probeData && (
           <>
             {isDoubleSided ? (
-              <DoubleSidedProbeCanvas
+              <DoubleSidedProbeDrawing
                 entry={entry}
                 probeData={probeData}
                 camera={view.camera}
@@ -494,7 +498,7 @@ export function ProbeViewer() {
                 onZoom={(value) => setZoom(value)}
               />
             ) : (
-              <ProbeCanvas
+              <ProbeDrawing
                 entry={entry}
                 probeData={probeData}
                 camera={view.camera}
@@ -506,7 +510,7 @@ export function ProbeViewer() {
               />
             )}
             {view.showOverview && (
-              <ProbeOverview
+              <ProbeMinimap
                 probeData={probeData}
                 camera={view.camera}
                 mainWidth={canvasSize.width}
@@ -515,7 +519,7 @@ export function ProbeViewer() {
               />
             )}
 
-            <div className="canvas-controls canvas-controls--nav">
+            <div className="probe-drawing-controls probe-drawing-controls--zoom">
               <button
                 type="button"
                 onClick={() => setZoom(view.camera.zoom * 1.5)}
@@ -534,16 +538,16 @@ export function ProbeViewer() {
           </>
         )}
         {status === "loading" && (
-          <div className="viewer-placeholder">
+          <div className="probe-view-placeholder">
             <p>Loading probe geometry…</p>
           </div>
         )}
       </section>
 
       {status !== "error" && probeData && (
-        <section className="viewer-toolbar viewer-toolbar--bottom">
+        <section className="probe-view-toolbar probe-view-toolbar--display-options">
           {hasContactIds && (
-            <label className="viewer-toggle">
+            <label className="probe-view-toggle">
               <input
                 type="checkbox"
                 checked={view.showContactIds}
@@ -553,7 +557,7 @@ export function ProbeViewer() {
               Show contact IDs
             </label>
           )}
-          <label className="viewer-toggle">
+          <label className="probe-view-toggle">
             <input
               type="checkbox"
               checked={view.showScaleBar}
@@ -562,7 +566,7 @@ export function ProbeViewer() {
             {ScaleBarIcon}
             Scale bar
           </label>
-          <label className="viewer-toggle">
+          <label className="probe-view-toggle">
             <input
               type="checkbox"
               checked={view.showOverview}
@@ -574,7 +578,7 @@ export function ProbeViewer() {
         </section>
       )}
 
-      <div className="viewer-issue-link">
+      <div className="probe-view-issue-link">
         <a
           href="https://github.com/SpikeInterface/probeinterface_library/issues"
           target="_blank"

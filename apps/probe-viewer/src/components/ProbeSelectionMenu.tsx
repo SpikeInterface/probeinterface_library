@@ -16,7 +16,7 @@ const MANUFACTURER_DISPLAY_NAMES: Record<string, string> = {
   "sinaps-research-platform": "SINAPS",
 };
 
-export function Sidebar() {
+export function ProbeSelectionMenu() {
   const manifest = useAppStore((state) => state.manifest);
   const manifestStatus = useAppStore((state) => state.manifestStatus);
   const selectedManufacturer = useAppStore((state) => state.selectedManufacturer);
@@ -135,13 +135,13 @@ export function Sidebar() {
       type="button"
       className={
         entry.id === selectedProbeId
-          ? "sidebar-item sidebar-item--active"
-          : "sidebar-item"
+          ? "probe-list-item probe-list-item--active"
+          : "probe-list-item"
       }
       onClick={() => selectProbe(entry.id)}
     >
-      <span className="sidebar-item-name">{entry.displayName}</span>
-      <span className="sidebar-item-meta">
+      <span className="probe-list-item-name">{entry.displayName}</span>
+      <span className="probe-list-item-meta">
         {entry.contactCount} contacts · {entry.shankCount} shanks
         {multiSideManufacturers.has(entry.manufacturer) &&
           ` · ${entry.numSides} ${entry.numSides === 1 ? "side" : "sides"}`}
@@ -158,33 +158,33 @@ export function Sidebar() {
     const open = !node.collapsible || isSearching || expanded.has(key);
     const wrapClass =
       depth === 0
-        ? "sidebar-group"
+        ? "probe-list-group"
         : depth === 1
-          ? "sidebar-subgroup"
-          : "sidebar-subdivision";
+          ? "probe-list-subgroup"
+          : "probe-list-subdivision";
     return (
       <div className={wrapClass} key={key}>
         {node.collapsible ? (
           <button
             type="button"
             className={
-              depth === 0 ? "sidebar-group-header" : "sidebar-subgroup-header"
+              depth === 0 ? "probe-list-group-header" : "probe-list-subgroup-header"
             }
             aria-expanded={open}
             onClick={() => toggle(key)}
           >
-            <span className="sidebar-group-caret">{open ? "▾" : "▸"}</span>
+            <span className="probe-list-group-caret">{open ? "▾" : "▸"}</span>
             <span
               className={
-                depth === 0 ? "sidebar-group-title" : "sidebar-subgroup-title"
+                depth === 0 ? "probe-list-group-title" : "probe-list-subgroup-title"
               }
             >
               {node.label}
             </span>
-            <span className="sidebar-group-count">{node.count}</span>
+            <span className="probe-list-group-count">{node.count}</span>
           </button>
         ) : (
-          <p className="sidebar-subgroup-divider">{node.label}</p>
+          <p className="probe-list-subgroup-divider">{node.label}</p>
         )}
         {open &&
           (node.children
@@ -195,11 +195,11 @@ export function Sidebar() {
   };
 
   return (
-    <div className="sidebar">
-      <header className="sidebar-header">
+    <div className="probe-selection-menu-content">
+      <header className="probe-selection-menu-header">
         <button
           type="button"
-          className="sidebar-home"
+          className="probe-selection-menu-home"
           onClick={() => {
             selectProbe(undefined);
             clearLocalProbe();
@@ -223,14 +223,14 @@ export function Sidebar() {
           </svg>
           Home
         </button>
-        <h1 className="sidebar-title">Probe Catalog</h1>
-        <p className="sidebar-subtitle">
+        <h1 className="probe-selection-menu-title">Probe Catalog</h1>
+        <p className="probe-selection-menu-subtitle">
           Browse available probe layouts and inspect their geometry.
         </p>
       </header>
 
-      <div className="sidebar-control">
-        <label className="sidebar-label" htmlFor="manufacturer-select">
+      <div className="probe-filter">
+        <label className="probe-filter-label" htmlFor="manufacturer-select">
           Manufacturer
         </label>
         <select
@@ -247,8 +247,8 @@ export function Sidebar() {
         </select>
       </div>
 
-      <div className="sidebar-control">
-        <label className="sidebar-label" htmlFor="probe-search">
+      <div className="probe-filter">
+        <label className="probe-filter-label" htmlFor="probe-search">
           Search by model
         </label>
         <input
@@ -262,8 +262,8 @@ export function Sidebar() {
       </div>
 
       {showSideFilter && (
-        <div className="sidebar-control">
-          <label className="sidebar-label" htmlFor="side-select">
+        <div className="probe-filter">
+          <label className="probe-filter-label" htmlFor="side-select">
             Number of sides
           </label>
           <select
@@ -286,15 +286,15 @@ export function Sidebar() {
         </div>
       )}
 
-      <div className="sidebar-list" role="list">
+      <div className="probe-list" role="list">
         {manifestStatus === "loading" && (
-          <p className="sidebar-hint">Loading manifest…</p>
+          <p className="probe-list-hint">Loading manifest…</p>
         )}
         {manifestStatus === "error" && (
-          <p className="sidebar-error">Failed to load manifest.</p>
+          <p className="probe-list-error">Failed to load manifest.</p>
         )}
         {manifestStatus === "success" && filteredEntries.length === 0 && (
-          <p className="sidebar-hint">No probes match the current filters.</p>
+          <p className="probe-list-hint">No probes match the current filters.</p>
         )}
 
         {manifestStatus === "success" &&
