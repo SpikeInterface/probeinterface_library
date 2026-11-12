@@ -11,6 +11,10 @@ See:
 
 The format of probes is JSON-based. See [documentation](https://probeinterface.readthedocs.io/en/main/format_spec.html) for full specifications.
 
+### News
+
+* Updated all Cambridge NeuroTech probe JSON models with 2026-11-12 release!
+
 
 ### Preview `probe-viewer` app locally
 
